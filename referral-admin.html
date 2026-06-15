@@ -680,6 +680,18 @@ textarea.form-input{height:auto;padding:8px 10px;resize:vertical;min-height:54px
 .form-input::placeholder{color:var(--text-tertiary)}
 .form-select{cursor:pointer}
 .form-hint{font-size:0.72rem;color:var(--text-tertiary);margin-top:1px}
+/* Field hint tooltip — shows data-hint content on hover */
+[data-hint]{position:relative}
+[data-hint]::after{
+  content:attr(data-hint);position:absolute;left:0;top:calc(100% + 4px);
+  background:var(--bg-card);color:var(--text-secondary);
+  border:1px solid var(--border-color);border-radius:var(--radius-sm);
+  padding:4px 8px;font-size:0.7rem;white-space:normal;max-width:280px;
+  z-index:10;box-shadow:0 2px 8px rgba(0,0,0,0.15);
+  opacity:0;pointer-events:none;transition:opacity 0.15s;
+}
+[data-hint]:hover::after{opacity:1}
+[data-hint]:focus::after{opacity:1}
 .form-section-title{
   grid-column:1/-1;
   font-size:0.82rem;
@@ -1151,12 +1163,8 @@ textarea.form-input{height:auto;padding:8px 10px;resize:vertical;min-height:54px
         <input type="text" class="filter-input" id="filterTarget" placeholder="目标应用AppID" oninput="filterTable()" style="width:170px;height:34px;font-size:0.85rem;padding:0 10px;border:1px solid var(--border-color);border-radius:var(--radius-md);background:var(--bg-input);color:var(--text-primary);outline:none" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border-color)'">
         <select class="filter-select" id="filterStatus" onchange="filterTable()">
           <option value="">状态（全部）</option>
-          <option value="0">[0] 下架</option>
-          <option value="1">[1] 上架</option>
-          <option value="2">[2] 计划归档</option>
-          <option value="3">[3] 归档中</option>
-          <option value="4">[4] 已归档</option>
-          <option value="5">[5] 归档失败</option>
+          <option value="0">[0] 禁用</option>
+          <option value="1">[1] 启用</option>
         </select>
         <button class="btn btn-primary" onclick="filterTable()">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
@@ -1303,34 +1311,34 @@ textarea.form-input{height:auto;padding:8px 10px;resize:vertical;min-height:54px
         <div class="form-grid">
           <div class="form-section-title">基本信息</div>
           <div class="form-group">
-            <label class="form-label">应用 <span class="required">*</span></label>
-            <select class="form-input form-select" id="f_app_id" required></select>
+            <label class="form-label">应用 (APP_ID) <span class="required">*</span></label>
+            <select class="form-input form-select" id="f_app_id" required data-hint="N2 APP_ID · int unsigned · 必填"></select>
           </div>
           <div class="form-group">
-            <label class="form-label">排序 <span class="required">*</span></label>
-            <input type="number" class="form-input" id="f_sort" placeholder="0" value="0">
+            <label class="form-label">排序 (SORT)</label>
+            <input type="number" class="form-input" id="f_sort" placeholder="0（数字越大越靠前）" value="0" data-hint="N17 SORT · int · 默认NULL · 非必填">
           </div>
           <div class="form-group">
-            <label class="form-label">目标应用AppID <span class="required">*</span></label>
-            <input type="text" class="form-input" id="f_target_app_id" placeholder="请输入目标应用AppID">
+            <label class="form-label">目标活动 / 任务 ID (TARGET_ID) <span class="required">*</span></label>
+            <input type="text" class="form-input" id="f_target_app_id" placeholder="请输入目标活动/任务ID" data-hint="N3 TARGET_ID · varchar(64) · 必填">
           </div>
           <div class="form-group">
-            <label class="form-label">目标应用名称 <span class="required">*</span></label>
-            <input type="text" class="form-input" id="f_target_app_name" placeholder="请输入目标应用名称">
+            <label class="form-label">目标活动 / 任务名称 (TARGET_NAME) <span class="required">*</span></label>
+            <input type="text" class="form-input" id="f_target_app_name" placeholder="请输入目标活动/任务名称" data-hint="N4 TARGET_NAME · varchar(30) · 必填">
           </div>
           <div class="form-group">
-            <label class="form-label">目标应用简介</label>
-            <input type="text" class="form-input" id="f_target_app_desc" placeholder="最多12个中文" maxlength="36">
+            <label class="form-label">目标活动 / 任务描述 (TARGET_DESC)</label>
+            <input type="text" class="form-input" id="f_target_app_desc" placeholder="最多12个中文" maxlength="36" data-hint="N5 TARGET_DESC · varchar(500) · 默认NULL · 非必填">
           </div>
           <div class="form-group">
-            <label class="form-label">页面路径</label>
-            <input type="text" class="form-input" id="f_launch_path" placeholder="请输入页面路径">
+            <label class="form-label">跳转路径 / 启动地址 (LAUNCH_PATH)</label>
+            <input type="text" class="form-input" id="f_launch_path" placeholder="请输入跳转路径/启动地址" data-hint="N6 LAUNCH_PATH · varchar(256) · 默认NULL · 为空则不限制页面打开方式">
           </div>
           <div class="form-section-title">奖励配置</div>
           <div class="form-group">
-            <label class="form-label">礼包</label>
+            <label class="form-label">礼包 (GIVEPKG_ID)</label>
             <div class="gift-input-group">
-              <input type="text" class="form-input" id="f_gift_display" placeholder="点击右侧配置按钮配置礼包" readonly>
+              <input type="text" class="form-input" id="f_gift_display" placeholder="点击右侧配置按钮配置礼包" readonly data-hint="N10 GIVEPKG_ID · bigint unsigned · 默认NULL · 非必填">
               <button type="button" class="gift-action-btn gift-config-btn" onclick="openGiftConfigSub()" title="配置礼包内容">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.32 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
               </button>
@@ -1341,12 +1349,12 @@ textarea.form-input{height:auto;padding:8px 10px;resize:vertical;min-height:54px
             <input type="hidden" id="f_givepkg_id" value="0">
           </div>
           <div class="form-group">
-            <label class="form-label">限购次数</label>
-            <input type="number" class="form-input" id="f_reward_times" placeholder="0 = 不限购" value="0">
+            <label class="form-label">奖励领取次数上限 (REWARD_TIMES_LIMIT)</label>
+            <input type="number" class="form-input" id="f_reward_times" placeholder="0 = 不限" value="0" data-hint="N9 REWARD_TIMES_LIMIT · int unsigned · 默认NULL · 0表示不限制">
           </div>
           <div class="form-group">
-            <label class="form-label">奖励周期 (reward_spec)</label>
-            <select class="form-input form-select" id="f_reward_spec_type" onchange="onRewardSpecChange()">
+            <label class="form-label">奖励有效期 / 周期 (REWARD_PERIOD)</label>
+            <select class="form-input form-select" id="f_reward_spec_type" onchange="onRewardSpecChange()" data-hint="N7 REWARD_PERIOD · varchar(30) · 默认NULL · 非必填">
               <option value="">无限制</option>
               <option value="@once">@once — 仅可领取一次</option>
               <option value="@daily">@daily — 每个自然日重置</option>
@@ -1369,12 +1377,12 @@ textarea.form-input{height:auto;padding:8px 10px;resize:vertical;min-height:54px
             </div>
           </div>
           <div class="form-group full">
-            <label class="form-label">奖励条件 (condition JSON)</label>
-            <textarea class="json-editor" id="f_condition" placeholder="请输入奖励条件json" spellcheck="false"></textarea>
+            <label class="form-label">奖励触发条件 (REWARD_COND)</label>
+            <textarea class="json-editor" id="f_condition" placeholder="请输入奖励触发条件JSON，如：{\"key\":\"value\"}" spellcheck="false" data-hint="N8 REWARD_COND · varchar(200) · 默认NULL · JSON格式，为空则无条件限制"></textarea>
           </div>
           <div class="form-section-title">图片资源</div>
           <div class="form-group">
-            <label class="form-label">游戏图标 (Icon)</label>
+            <label class="form-label">图标 (ICON_URL)</label>
             <div class="image-upload-area" id="iconUpload" onclick="document.getElementById('iconFileInput').click()">
               <input type="file" id="iconFileInput" accept="image/*" onchange="handleFileUpload(this,'icon')">
               <div id="iconPreviewWrap">
@@ -1384,12 +1392,12 @@ textarea.form-input{height:auto;padding:8px 10px;resize:vertical;min-height:54px
               <input type="hidden" id="f_icon_url" value="">
             </div>
             <div style="display:flex;gap:6px;align-items:center;margin-top:4px">
-              <input type="text" class="form-input" id="f_icon_url_input" placeholder="或输入图片URL" style="flex:1;height:30px;font-size:0.8rem" oninput="document.getElementById('f_icon_url').value=this.value;updateImagePreview('icon')">
+              <input type="text" class="form-input" id="f_icon_url_input" placeholder="或输入图片URL" style="flex:1;height:30px;font-size:0.8rem" oninput="document.getElementById('f_icon_url').value=this.value;updateImagePreview('icon')" data-hint="N15 ICON_URL · varchar(256) · 默认NULL · 非必填">
               <button type="button" class="btn btn-ghost btn-sm" onclick="openImageLibrary('icon')">图库</button>
             </div>
           </div>
           <div class="form-group">
-            <label class="form-label">背景图 / Banner</label>
+            <label class="form-label">Banner 图 (BANNER_URL)</label>
             <div class="image-upload-area" id="bannerUpload" onclick="document.getElementById('bannerFileInput').click()">
               <input type="file" id="bannerFileInput" accept="image/*" onchange="handleFileUpload(this,'banner')">
               <div id="bannerPreviewWrap">
@@ -1399,12 +1407,12 @@ textarea.form-input{height:auto;padding:8px 10px;resize:vertical;min-height:54px
               <input type="hidden" id="f_banner_url" value="">
             </div>
             <div style="display:flex;gap:6px;align-items:center;margin-top:4px">
-              <input type="text" class="form-input" id="f_banner_url_input" placeholder="或输入图片URL" style="flex:1;height:30px;font-size:0.8rem" oninput="document.getElementById('f_banner_url').value=this.value;updateImagePreview('banner')">
+              <input type="text" class="form-input" id="f_banner_url_input" placeholder="或输入图片URL" style="flex:1;height:30px;font-size:0.8rem" oninput="document.getElementById('f_banner_url').value=this.value;updateImagePreview('banner')" data-hint="N13 BANNER_URL · varchar(256) · 默认NULL · 非必填">
               <button type="button" class="btn btn-ghost btn-sm" onclick="openImageLibrary('banner')">图库</button>
             </div>
           </div>
           <div class="form-group">
-            <label class="form-label">弹窗图 / 拍脸图</label>
+            <label class="form-label">弹窗图 (POPUP_URL)</label>
             <div class="image-upload-area" id="popupUpload" onclick="document.getElementById('popupFileInput').click()">
               <input type="file" id="popupFileInput" accept="image/*" onchange="handleFileUpload(this,'popup')">
               <div id="popupPreviewWrap">
@@ -1414,12 +1422,12 @@ textarea.form-input{height:auto;padding:8px 10px;resize:vertical;min-height:54px
               <input type="hidden" id="f_popup_url" value="">
             </div>
             <div style="display:flex;gap:6px;align-items:center;margin-top:4px">
-              <input type="text" class="form-input" id="f_popup_url_input" placeholder="或输入图片URL" style="flex:1;height:30px;font-size:0.8rem" oninput="document.getElementById('f_popup_url').value=this.value;updateImagePreview('popup')">
+              <input type="text" class="form-input" id="f_popup_url_input" placeholder="或输入图片URL" style="flex:1;height:30px;font-size:0.8rem" oninput="document.getElementById('f_popup_url').value=this.value;updateImagePreview('popup')" data-hint="N14 POPUP_URL · varchar(256) · 默认NULL · 非必填">
               <button type="button" class="btn btn-ghost btn-sm" onclick="openImageLibrary('popup')">图库</button>
             </div>
           </div>
           <div class="form-group">
-            <label class="form-label">推荐位图片</label>
+            <label class="form-label">推荐位跳转 (RECOMMEND_URL)</label>
             <div class="image-upload-area" id="recommendUpload" onclick="document.getElementById('recommendFileInput').click()">
               <input type="file" id="recommendFileInput" accept="image/*" onchange="handleFileUpload(this,'recommend')">
               <div id="recommendPreviewWrap">
@@ -1429,20 +1437,20 @@ textarea.form-input{height:auto;padding:8px 10px;resize:vertical;min-height:54px
               <input type="hidden" id="f_recommend_url" value="">
             </div>
             <div style="display:flex;gap:6px;align-items:center;margin-top:4px">
-              <input type="text" class="form-input" id="f_recommend_url_input" placeholder="或输入图片URL" style="flex:1;height:30px;font-size:0.8rem" oninput="document.getElementById('f_recommend_url').value=this.value;updateImagePreview('recommend')">
+              <input type="text" class="form-input" id="f_recommend_url_input" placeholder="或输入图片URL" style="flex:1;height:30px;font-size:0.8rem" oninput="document.getElementById('f_recommend_url').value=this.value;updateImagePreview('recommend')" data-hint="N16 RECOMMEND_URL · varchar(256) · 默认NULL · 非必填">
               <button type="button" class="btn btn-ghost btn-sm" onclick="openImageLibrary('recommend')">图库</button>
             </div>
           </div>
           <div class="form-section-title">展示配置</div>
           <div class="form-group">
-            <label class="form-label">应用渠道</label>
-            <select class="form-input form-select" id="f_app_channel_name">
+            <label class="form-label">应用渠道标识 (APP_CHANNEL)</label>
+            <select class="form-input form-select" id="f_app_channel_name" data-hint="N11 APP_CHANNEL · varchar(32) · 默认NULL · 非必填">
               <option value="">不限制</option>
             </select>
           </div>
           <div class="form-group">
-            <label class="form-label">支持系统 <span class="required">*</span></label>
-            <select class="form-input form-select" id="f_os" required>
+            <label class="form-label">目标操作系统 (OS) <span class="required">*</span></label>
+            <select class="form-input form-select" id="f_os" required data-hint="N12 OS · varchar(32) · 默认NULL · 必填">
               <option value="0">[0] 全部</option>
               <option value="1">[1] Android</option>
               <option value="2">[2] iOS</option>
@@ -1450,14 +1458,10 @@ textarea.form-input{height:auto;padding:8px 10px;resize:vertical;min-height:54px
             </select>
           </div>
           <div class="form-group">
-            <label class="form-label">状态 <span class="required">*</span></label>
-            <select class="form-input form-select" id="f_status">
-              <option value="0">[0] 下架</option>
-              <option value="1">[1] 上架</option>
-              <option value="2">[2] 计划归档</option>
-              <option value="3">[3] 归档中</option>
-              <option value="4">[4] 已归档</option>
-              <option value="5">[5] 归档失败</option>
+            <label class="form-label">状态 (STATUS) <span class="required">*</span></label>
+            <select class="form-input form-select" id="f_status" data-hint="N18 STATUS · int · 默认'0' · 必填">
+              <option value="0">[0] 禁用</option>
+              <option value="1">[1] 启用</option>
             </select>
           </div>
         </div>
@@ -1799,19 +1803,19 @@ let columnConfig = [
   { key:'check', label:'',    visible:true,  width:36  },
   { key:'id',     label:'编号',   visible:true,  width:60  },
   { key:'app',    label:'应用',   visible:true,  width:180 },
-  { key:'target', label:'联运应用',  visible:true,  width:200 },
-  { key:'desc',   label:'简介',   visible:true,  width:150 },
+  { key:'target', label:'目标活动名称',  visible:true,  width:200 },
+  { key:'desc',   label:'目标活动描述',   visible:true,  width:150 },
   { key:'gift',   label:'礼包',   visible:true,  width:160 },
-  { key:'icon',   label:'Icon',   visible:true,  width:60  },
-  { key:'banner', label:'Banner',  visible:true,  width:60  },
+  { key:'icon',   label:'图标',   visible:true,  width:60  },
+  { key:'banner', label:'Banner 图',  visible:true,  width:60  },
   { key:'popup',  label:'弹窗图',  visible:true,  width:60  },
-  { key:'recommend',label:'推荐位', visible:true,  width:60  },
-  { key:'reward_spec', label:'奖励周期', visible:false, width:90  },
-  { key:'reward_times',label:'限购次数', visible:false, width:70  },
+  { key:'recommend',label:'推荐位跳转', visible:true,  width:60  },
+  { key:'reward_spec', label:'奖励有效期/周期', visible:false, width:90  },
+  { key:'reward_times',label:'奖励领取次数上限', visible:false, width:70  },
   { key:'sort',   label:'排序',   visible:true,  width:60  },
   { key:'status', label:'状态',   visible:true,  width:70  },
-  { key:'os',     label:'系统',   visible:false, width:80  },
-  { key:'channel',label:'渠道',   visible:false, width:80  },
+  { key:'os',     label:'目标操作系统',   visible:false, width:80  },
+  { key:'channel',label:'应用渠道标识',   visible:false, width:80  },
   { key:'time',   label:'创建时间', visible:true,  width:140 },
   { key:'action', label:'操作',   visible:true,  width:190 },
 ];
@@ -1987,7 +1991,7 @@ function renderTable(){
 
   tbody.innerHTML = filtered.map(r => {
     const osLabel = ['全部','Android','iOS','Android+iOS'][r.os] || '全部';
-    const statusMap = {0:'下架',1:'上架',2:'计划归档',3:'归档中',4:'已归档',5:'归档失败'};
+    const statusMap = {0:'禁用',1:'启用',2:'计划归档',3:'归档中',4:'已归档',5:'归档失败'};
     const statusLabel = statusMap[r.status] || '未知';
     const statusBadgeClass = r.status===0 ? 'badge badge-inactive' : r.status===1 ? 'badge badge-active' : 'badge badge-archived';
     const statusDotClass = r.status===0 ? 'inactive' : r.status===1 ? 'active' : 'archived';
@@ -2158,8 +2162,8 @@ function saveReferral(){
     recommend_url: document.getElementById('f_recommend_url').value,
     sort: parseInt(document.getElementById('f_sort').value) || 0,
   };
-  if(!data.target_app_id){ showToast('请填写目标应用AppID', 'error'); return; }
-  if(!data.target_app_name){ showToast('请填写目标应用名称', 'error'); return; }
+  if(!data.target_app_id){ showToast('请填写目标活动ID', 'error'); return; }
+  if(!data.target_app_name){ showToast('请填写目标活动名称', 'error'); return; }
   if(!data.app_id){ showToast('请选择应用', 'error'); return; }
   const now = new Date().toISOString().replace('T',' ').slice(0,19);
   if(editId){
@@ -2229,7 +2233,7 @@ function showDetail(id){
   if(!r) return;
   document.getElementById('detailModalTitle').textContent = '配置详情 #' + id;
   const osLabel = ['全部','Android','iOS','Android+iOS'][r.os] || '全部';
-  const statusMap = {0:'下架',1:'上架',2:'计划归档',3:'归档中',4:'已归档',5:'归档失败'};
+  const statusMap = {0:'禁用',1:'启用',2:'计划归档',3:'归档中',4:'已归档',5:'归档失败'};
   const statusLabel = statusMap[r.status] || '未知';
   const statusBadgeClass = r.status===0 ? 'badge badge-inactive' : r.status===1 ? 'badge badge-active' : 'badge badge-archived';
   const statusDotClass = r.status===0 ? 'inactive' : r.status===1 ? 'active' : 'archived';
