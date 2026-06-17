@@ -1542,13 +1542,6 @@ textarea.form-input{height:auto;padding:8px 10px;resize:vertical;min-height:54px
     <div class="modal-body">
       <p style="font-size:0.82rem;color:var(--text-tertiary);margin-bottom:16px">勾选字段前的选框后，该字段将被批量修改。不填则置空。选中 <strong id="batchEditCount" style="color:var(--accent-light)">0</strong> 条。</p>
       <div class="batch-edit-grid">
-  <div class="form-group" data-be="target_app_id">
-    <label class="form-label checkbox-field-label">
-      <input type="checkbox" class="be-checkbox" id="cb_be_target_app_id" onchange="toggleBatchField(this)">
-      目标应用id
-    </label>
-    <input type="text" class="form-input" id="be_target_app_id" placeholder="不填则置空" disabled>
-  </div>
   <div class="form-group" data-be="launch_path">
     <label class="form-label checkbox-field-label">
       <input type="checkbox" class="be-checkbox" id="cb_be_launch_path" onchange="toggleBatchField(this)">
@@ -1595,12 +1588,8 @@ textarea.form-input{height:auto;padding:8px 10px;resize:vertical;min-height:54px
       状态
     </label>
     <select class="form-input form-select" id="be_status" disabled>
-      <option value="0">[0] 下架</option>
-      <option value="1">[1] 上架</option>
-      <option value="2">[2] 计划归档</option>
-      <option value="3">[3] 归档中</option>
-      <option value="4">[4] 已归档</option>
-      <option value="5">[5] 归档失败</option>
+      <option value="0">[0] 禁用</option>
+      <option value="1">[1] 启用</option>
     </select>
   </div>
   <div class="form-group" data-be="os">
@@ -2501,7 +2490,7 @@ function batchEdit(){
   const ids = getSelectedIds(); if(!ids.length) return;
   document.getElementById('batchEditCount').textContent = ids.length;
   ['be_launch_path','be_reward_times'].forEach(id => document.getElementById(id).value = '');
-  ['be_target_app_id','be_status','be_os'].forEach(id => document.getElementById(id).value = '');
+  ['be_status','be_os'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('be_condition').value = '';
   document.getElementById('be_reward_spec_type').value = '';
   document.getElementById('be_reward_spec').value = '';
@@ -2520,7 +2509,6 @@ function confirmBatchEdit(){
   const v = id => document.getElementById(id).value;
   const chk = id => { const e = document.getElementById('cb_'+id); return e && e.checked; };
 
-  if(chk('be_target_app_id')) u.target_app_id = v('be_target_app_id');
   if(chk('be_launch_path')) u.launch_path = v('be_launch_path');
   if(chk('be_reward_spec')){ const rs = document.getElementById('be_reward_spec').value; if(rs) u.reward_spec = rs; else u.reward_spec = ''; }
   if(chk('be_reward_times')){ const t = parseInt(v('be_reward_times')); u.reward_times = isNaN(t) ? 0 : t; }
