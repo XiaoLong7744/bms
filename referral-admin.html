@@ -929,26 +929,69 @@ textarea.form-input{height:auto;padding:8px 10px;resize:vertical;min-height:54px
   position:absolute;top:calc(100% + 6px);left:0;z-index:500;
   background:var(--bg-card);border:1px solid var(--border-color);
   border-radius:var(--radius-md);box-shadow:0 8px 30px rgba(0,0,0,0.3);
-  width:380px;padding:14px;display:none;
+  width:560px;display:none;overflow:hidden;
 }
-.daterange-popup.show{display:block}
-.daterange-header{font-size:0.82rem;font-weight:600;color:var(--text-primary);margin-bottom:10px}
-.daterange-presets{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
-.daterange-presets span{
-  font-size:0.76rem;padding:3px 10px;border-radius:var(--radius-sm);
-  border:1px solid var(--border-color);cursor:pointer;color:var(--text-secondary);
-  transition:var(--transition);background:var(--bg-input);
+.daterange-popup.show{display:flex}
+.daterange-popup .dr-sidebar{
+  width:120px;min-width:120px;background:var(--bg-secondary);
+  border-right:1px solid var(--border-color);padding:12px 10px;
+  display:flex;flex-direction:column;gap:4px;
 }
-.daterange-presets span:hover{border-color:var(--accent);color:var(--accent-light)}
-.daterange-inputs{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
-.daterange-inputs label{font-size:0.76rem;color:var(--text-tertiary)}
-.daterange-inputs input[type="date"]{
+.daterange-popup .dr-sidebar .dr-preset{
+  font-size:0.78rem;padding:7px 10px;border-radius:var(--radius-sm);
+  cursor:pointer;color:var(--text-secondary);transition:var(--transition);
+}
+.daterange-popup .dr-sidebar .dr-preset:hover{background:var(--bg-hover);color:var(--text-primary)}
+.daterange-popup .dr-sidebar .dr-preset.active{border:1px solid var(--accent);color:var(--accent-light)}
+.daterange-popup .dr-main{flex:1;padding:14px 16px;display:flex;flex-direction:column}
+.daterange-popup .dr-cal-row{display:flex;gap:12px;flex:1}
+.daterange-popup .dr-month{flex:1}
+.daterange-popup .dr-month-header{
+  display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;
+  font-size:0.82rem;font-weight:600;color:var(--text-primary);
+}
+.daterange-popup .dr-month-header .dr-nav{
+  background:none;border:none;color:var(--text-tertiary);cursor:pointer;
+  font-size:0.9rem;padding:0 4px;
+}
+.daterange-popup .dr-month-header .dr-nav:hover{color:var(--accent-light)}
+.daterange-popup .dr-weekdays{
+  display:grid;grid-template-columns:repeat(7,1fr);text-align:center;
+  font-size:0.7rem;color:var(--text-tertiary);margin-bottom:4px;
+}
+.daterange-popup .dr-weekdays span{padding:2px 0}
+.daterange-popup .dr-days{
+  display:grid;grid-template-columns:repeat(7,1fr);text-align:center;
+}
+.daterange-popup .dr-days .dr-day{
+  padding:4px 0;font-size:0.8rem;cursor:pointer;border-radius:4px;
+  color:var(--text-primary);transition:background 0.1s;
+}
+.daterange-popup .dr-days .dr-day.dim{color:var(--text-tertiary);opacity:0.45}
+.daterange-popup .dr-days .dr-day:hover:not(.dim){background:var(--bg-hover)}
+.daterange-popup .dr-days .dr-day.today{border:1px solid var(--accent);font-weight:600}
+.daterange-popup .dr-days .dr-day.in-range{background:rgba(99,102,241,0.12);border-radius:0}
+.daterange-popup .dr-days .dr-day.range-start,.dr-day.range-end{
+  background:var(--accent) !important;color:#fff !important;border-radius:4px;
+}
+.daterange-popup .dr-footer{
+  display:flex;flex-direction:column;gap:8px;
+  margin-top:12px;padding-top:10px;border-top:1px solid var(--border-color);
+}
+.daterange-popup .dr-footer-row{display:flex;justify-content:space-between;align-items:center}
+.daterange-popup .dr-footer .dr-range-label{
+  font-size:0.78rem;color:var(--text-secondary);
+}
+.daterange-popup .dr-footer .dr-range-label strong{color:var(--accent-light)}
+.daterange-popup .dr-footer-btns{display:flex;gap:8px}
+.daterange-popup .dr-footer-time{display:flex;gap:10px;align-items:center;margin-top:6px}
+.daterange-popup .dr-footer-time label{font-size:0.72rem;color:var(--text-tertiary)}
+.daterange-popup .dr-footer-time input[type="time"]{
   background:var(--bg-input);border:1px solid var(--border-color);
-  border-radius:var(--radius-sm);padding:4px 8px;height:32px;
-  font-size:0.82rem;color:var(--text-primary);outline:none;width:100%;
+  border-radius:var(--radius-sm);padding:3px 6px;height:28px;
+  font-size:0.78rem;color:var(--text-primary);outline:none;width:88px;
 }
-.daterange-inputs input[type="date"]:focus{border-color:var(--accent)}
-.daterange-footer{display:flex;justify-content:flex-end;gap:8px}
+.daterange-popup .dr-footer-time input[type="time"]:focus{border-color:var(--accent)}
 
 /* Custom columns modal */
 .col-config-list{display:flex;flex-direction:column;gap:2px;max-height:380px;overflow-y:auto;padding:4px 0}
@@ -1001,6 +1044,16 @@ body.theme-light .filter-combo input{
 }
 .filter-combo.has-value .combo-clear{display:block}
 .filter-combo.has-value .combo-clear:hover{color:var(--text-primary)}
+
+/* Filter input wrapper + inline clear button */
+.filter-input-wrap{position:relative;display:inline-flex;align-items:center}
+.filter-input-wrap .filter-input-clear{
+  position:absolute;right:6px;top:50%;transform:translateY(-50%);
+  background:transparent;border:none;color:var(--text-tertiary);
+  cursor:pointer;font-size:0.7rem;display:none;z-index:2;padding:0;
+}
+.filter-input-wrap.has-value .filter-input-clear{display:block}
+.filter-input-wrap .filter-input-clear:hover{color:var(--text-primary)}
 
 /* Column config popover */
 .col-config-popover{
@@ -1189,21 +1242,53 @@ body.theme-light .filter-combo input{
 
 /* Gift config sub panel */
 .gift-items-editor{margin-top:8px}
-.gift-item-row{display:flex;gap:8px;align-items:center;margin-bottom:8px}
-.gift-item-row input,.gift-item-row select{flex:1;height:34px}
-.gift-item-remove{
-  width:28px;height:28px;border-radius:50%;border:1px solid var(--danger);
-  background:transparent;color:var(--danger);cursor:pointer;
-  display:flex;align-items:center;justify-content:center;
-  font-size:0.7rem;transition:var(--transition);flex-shrink:0;
+.gift-items-table-wrap{max-height:300px;overflow-y:auto;border:1px solid var(--border-color);border-radius:var(--radius-sm);margin-top:14px}
+.gift-items-table{width:100%;border-collapse:collapse}
+.gift-items-table th{
+  font-size:0.75rem;font-weight:600;color:var(--text-secondary);text-align:left;
+  padding:8px 10px;background:var(--bg-secondary);border-bottom:1px solid var(--border-color);
+  position:sticky;top:0;z-index:1;
 }
-.gift-item-remove:hover{background:var(--danger);color:#fff}
-.gift-add-row-btn{
-  font-size:0.8rem;color:var(--accent);cursor:pointer;border:none;
-  background:none;font-family:var(--font);padding:4px 0;
-  transition:var(--transition);
+.gift-items-table td{
+  font-size:0.8rem;padding:7px 10px;border-bottom:1px solid var(--border-color);
+  color:var(--text-primary);
 }
-.gift-add-row-btn:hover{color:var(--accent-light);text-decoration:underline}
+.gift-items-table tbody tr:hover{background:var(--bg-hover)}
+.gc-qty-input{
+  width:70px;height:28px;padding:0 6px;border:1px solid var(--border-color);
+  border-radius:var(--radius-sm);background:var(--bg-input);color:var(--text-tertiary);
+  font-size:0.8rem;text-align:center;outline:none;
+}
+.gc-qty-input.editable{color:var(--text-primary);border-color:var(--accent)}
+.gc-sort-input{
+  width:50px;height:28px;padding:0 4px;border:1px solid var(--border-color);
+  border-radius:var(--radius-sm);background:var(--bg-input);color:var(--text-primary);
+  font-size:0.8rem;text-align:center;outline:none;
+}
+.gc-row-btn{
+  font-size:0.72rem;padding:3px 10px;border-radius:var(--radius-sm);cursor:pointer;border:1px solid;
+  transition:var(--transition);font-family:var(--font);background:transparent;
+}
+.gc-row-btn.edit-btn{color:var(--accent);border-color:var(--accent)}
+.gc-row-btn.edit-btn:hover{background:var(--accent);color:#fff}
+.gc-row-btn.save-btn{color:#fff;background:var(--accent);border-color:var(--accent);display:none}
+.gc-row-btn.save-btn:hover{background:var(--accent-hover)}
+.gc-row-btn.del-btn{color:var(--danger);border-color:var(--danger);margin-left:4px}
+.gc-row-btn.del-btn:hover{background:var(--danger);color:#fff}
+
+.gift-ps{
+  margin-top:14px;padding:10px 14px;background:var(--bg-secondary);
+  border:1px solid var(--border-color);border-radius:var(--radius-sm);
+  font-size:0.72rem;color:var(--text-tertiary);line-height:1.7;
+}
+.gift-ps strong{color:var(--text-secondary)}
+
+.btn-outline{
+  border:1px solid var(--border-color);color:var(--text-secondary);
+  background:transparent;border-radius:var(--radius-sm);padding:6px 16px;
+  font-size:0.82rem;cursor:pointer;font-family:var(--font);transition:var(--transition);
+}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent-light)}
 
 /* Gift info header */
 .gift-info-header{display:flex;align-items:center;gap:12px;margin-bottom:14px;padding:10px 16px;background:var(--bg-secondary);border-radius:var(--radius-sm);border:1px solid var(--border-color)}
@@ -1224,32 +1309,14 @@ body.theme-light .filter-combo input{
   </div>
   <nav class="sidebar-menu">
     <div class="sidebar-group">
-      <div class="sidebar-group-title">推广</div>
-      <a class="sidebar-item" href="#">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-        推广管理
+      <div class="sidebar-group-title">应用</div>
+      <a class="sidebar-item active" href="#" onclick="switchPage('referral-config');return false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+        应用引流配置
       </a>
-      <div class="sidebar-group" style="padding-left:16px">
-        <div class="sidebar-group-title" style="font-size:0.68rem;padding:4px 16px 2px">联运</div>
-        <a class="sidebar-item active" href="#" onclick="switchPage('referral-config');return false">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
-          应用引流配置
-        </a>
-        <a class="sidebar-item" href="#" onclick="switchPage('user-data');return false">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
-          应用引流用户数据
-        </a>
-      </div>
-    </div>
-    <div class="sidebar-group">
-      <div class="sidebar-group-title">其他</div>
-      <a class="sidebar-item" href="#">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10M18 20V4M6 20v-4"/></svg>
-        数据统计
-      </a>
-      <a class="sidebar-item" href="#">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.32 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-        系统设置
+      <a class="sidebar-item" href="#" onclick="switchPage('user-data');return false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+        应用引流用户数据
       </a>
     </div>
   </nav>
@@ -1261,7 +1328,7 @@ body.theme-light .filter-combo input{
   <!-- Header -->
   <header class="app-header">
     <div class="header-breadcrumb">
-      推广 <span class="sep">·</span> 联运 <span class="sep">·</span>
+      应用 <span class="sep">·</span>
       <span class="current" id="breadcrumbCurrent">应用引流配置</span>
     </div>
     <div class="header-actions">
@@ -1288,9 +1355,16 @@ body.theme-light .filter-combo input{
           <input type="hidden" id="filterApp" value="">
           <div class="combo-dropdown" id="filterAppDropdown"></div>
         </div>
-        <input type="text" class="filter-input" id="filterTarget" placeholder="引流应用ID" oninput="filterTable()" data-fh onmouseenter="showFilterHint(event,'target')" onmouseleave="hideFilterHint(event,'target')" style="width:150px;height:34px;font-size:0.85rem;padding:0 10px;border:1px solid var(--border-color);border-radius:var(--radius-md);background:var(--bg-input);color:var(--text-primary);outline:none" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border-color)'">
-        <input type="text" class="filter-input" id="filterName" placeholder="引流应用名称" oninput="filterTable()" data-fh onmouseenter="showFilterHint(event,'name')" onmouseleave="hideFilterHint(event,'name')" style="width:150px;height:34px;font-size:0.85rem;padding:0 10px;border:1px solid var(--border-color);border-radius:var(--radius-md);background:var(--bg-input);color:var(--text-primary);outline:none" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border-color)'">
-        <select class="filter-select" id="filterStatus" onchange="filterTable()" data-fh onmouseenter="showFilterHint(event,'status')" onmouseleave="hideFilterHint(event,'status')">
+        <div class="filter-input-wrap" id="filterTargetWrap" data-fh onmouseenter="showFilterHint(event,'target')" onmouseleave="hideFilterHint(event,'target')">
+          <input type="text" class="filter-input" id="filterTarget" placeholder="引流应用ID" style="width:150px;height:34px;font-size:0.85rem;padding:0 24px 0 10px;border:1px solid var(--border-color);border-radius:var(--radius-md);background:var(--bg-input);color:var(--text-primary);outline:none" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border-color)'" onkeydown="if(event.key==='Enter')filterTable()" oninput="document.getElementById('filterTargetWrap').classList.toggle('has-value',!!this.value)">
+          <span class="filter-input-clear" onclick="document.getElementById('filterTarget').value='';document.getElementById('filterTargetWrap').classList.remove('has-value')">✕</span>
+        </div>
+        <div class="filter-input-wrap" id="filterNameWrap" data-fh onmouseenter="showFilterHint(event,'name')" onmouseleave="hideFilterHint(event,'name')">
+          <input type="text" class="filter-input" id="filterName" placeholder="引流应用名称" style="width:150px;height:34px;font-size:0.85rem;padding:0 24px 0 10px;border:1px solid var(--border-color);border-radius:var(--radius-md);background:var(--bg-input);color:var(--text-primary);outline:none" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border-color)'" onkeydown="if(event.key==='Enter')filterTable()" oninput="document.getElementById('filterNameWrap').classList.toggle('has-value',!!this.value)">
+          <span class="filter-input-clear" onclick="document.getElementById('filterName').value='';document.getElementById('filterNameWrap').classList.remove('has-value')">✕</span>
+        </div>
+        <div class="filter-input-wrap" id="filterStatusWrap" data-fh onmouseenter="showFilterHint(event,'status')" onmouseleave="hideFilterHint(event,'status')">
+          <select class="filter-select" id="filterStatus" onchange="document.getElementById('filterStatusWrap').classList.toggle('has-value',!!this.value)">
           <option value="">状态</option>
           <option value="0">[0] 下架</option>
           <option value="1">[1] 上架</option>
@@ -1299,6 +1373,8 @@ body.theme-light .filter-combo input{
           <option value="4">[4] 已归档</option>
           <option value="5">[5] 归档失败</option>
         </select>
+          <span class="filter-input-clear" onclick="document.getElementById('filterStatus').value='';document.getElementById('filterStatusWrap').classList.remove('has-value')">✕</span>
+        </div>
         <!-- Searchable 渠道 combo -->
         <div class="filter-combo" id="filterChannelCombo" data-fh onmouseenter="showFilterHint(event,'channel')" onmouseleave="hideFilterHint(event,'channel')">
           <input type="text" id="filterChannelInput" placeholder="渠道" autocomplete="off" onfocus="openChannelCombo()" oninput="filterChannelCombo()" onblur="setTimeout(()=>closeChannelCombo(),180)">
@@ -1312,23 +1388,34 @@ body.theme-light .filter-combo input{
           <input type="hidden" id="filterTimeStart" value="">
           <input type="hidden" id="filterTimeEnd" value="">
           <div class="daterange-popup" id="filterDateRangePopup">
-            <div class="daterange-header">选择创建时间区间</div>
-            <div class="daterange-presets">
-              <span onclick="setFilterDateRangePreset('today')">今天</span>
-              <span onclick="setFilterDateRangePreset('thisWeek')">本周</span>
-              <span onclick="setFilterDateRangePreset('thisMonth')">本月</span>
-              <span onclick="setFilterDateRangePreset('last7')">近7天</span>
-              <span onclick="setFilterDateRangePreset('last30')">近30天</span>
+            <div class="dr-sidebar">
+              <div class="dr-preset" onclick="setFilterDateRangePreset('today',this)">今天</div>
+              <div class="dr-preset" onclick="setFilterDateRangePreset('thisWeek',this)">本周</div>
+              <div class="dr-preset" onclick="setFilterDateRangePreset('thisMonth',this)">本月</div>
+              <div class="dr-preset" onclick="setFilterDateRangePreset('last7',this)">近7天</div>
+              <div class="dr-preset" onclick="setFilterDateRangePreset('last30',this)">近30天</div>
             </div>
-            <div class="daterange-inputs">
-              <label>开始</label>
-              <input type="datetime-local" id="filterDrpStart" step="1">
-              <label>结束</label>
-              <input type="datetime-local" id="filterDrpEnd" step="1">
-            </div>
-            <div class="daterange-footer">
-              <button class="btn btn-ghost btn-sm" onclick="clearFilterDateRange()">清除</button>
-              <button class="btn btn-primary btn-sm" onclick="confirmFilterDateRange()">确定</button>
+            <div class="dr-main">
+              <div class="dr-cal-row">
+                <div class="dr-month" id="drCalLeft"><div class="dr-month-header"><button class="dr-nav" onclick="drCalMonth(-1)">◀</button><span id="drLabelLeft"></span><span></span></div><div class="dr-weekdays"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div><div class="dr-days" id="drDaysLeft"></div></div>
+                <div class="dr-month" id="drCalRight"><div class="dr-month-header"><span></span><span id="drLabelRight"></span><button class="dr-nav" onclick="drCalMonth(1)">▶</button></div><div class="dr-weekdays"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div><div class="dr-days" id="drDaysRight"></div></div>
+              </div>
+              <div class="dr-footer">
+                <div class="dr-range-label" id="drRangeLabel">请点击日历选择起止日期</div>
+                <div class="dr-footer-time">
+                  <label>开始</label><input type="time" id="drpStartTime" step="1" value="00:00:00" onchange="onDrpTimeChange()">
+                  <label>结束</label><input type="time" id="drpEndTime" step="1" value="23:59:59" onchange="onDrpTimeChange()">
+                </div>
+                <div class="dr-footer-row">
+                  <span></span>
+                  <div class="dr-footer-btns">
+                  <button class="btn btn-ghost btn-sm" onclick="clearFilterDateRange()">清除</button>
+                  <button class="btn btn-primary btn-sm" onclick="confirmFilterDateRange()">确定</button>
+                </div>
+              </div>
+              </div>
+              <input type="hidden" id="filterDrpStart">
+              <input type="hidden" id="filterDrpEnd">
             </div>
           </div>
         </div>
@@ -1884,22 +1971,64 @@ body.theme-light .filter-combo input{
 
 <!-- ===== MODAL: Gift Config Sub ===== -->
 <div class="modal-overlay" id="giftConfigModal">
-  <div class="modal" style="max-width:600px">
+  <div class="modal" style="max-width:720px">
     <div class="modal-header">
-      <h2>配置礼包</h2>
+      <h2>创建礼包</h2>
       <button class="modal-close-btn" onclick="closeModal('giftConfigModal')">✕</button>
     </div>
     <div class="modal-body">
-      <div class="form-grid">
-        <div class="form-group"><label class="form-label">礼包名称 <span class="required">*</span></label><input type="text" class="form-input" id="gc_gift_name" placeholder="如 5元充值礼包"></div>
+      <div class="form-group">
+        <label class="form-label">礼包名称 <span class="required">*</span></label>
+        <input type="text" class="form-input" id="gc_gift_name" placeholder="请输入礼包名称" style="max-width:280px">
       </div>
-      <div class="detail-section-title">奖励明细</div>
-      <div class="gift-items-editor" id="gcItemsEditor"></div>
-      <button type="button" class="gift-add-row-btn" onclick="addGiftItemRow()">+ 添加奖励</button>
+      <div class="gift-items-table-wrap">
+        <table class="gift-items-table">
+          <thead><tr>
+            <th style="width:60px">排序</th>
+            <th style="width:120px">奖励类型</th>
+            <th style="width:160px">道具名称</th>
+            <th style="width:100px">数量</th>
+            <th style="width:100px">操作</th>
+          </tr></thead>
+          <tbody id="gcItemsTbody">
+            <tr><td colspan="5" style="text-align:center;color:var(--text-tertiary);padding:16px">暂无奖励项目</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <button type="button" class="btn btn-outline btn-sm" onclick="openAddGiftItemModal()" style="margin-top:10px">+ 添加礼包项目</button>
+      <div class="gift-ps">
+        <strong>PS：</strong><br>
+        1、由于微服务限制，同个礼包中每个项目类型只允许配置一个<br>
+        2、随机物品显示规则为：物品ID|概率|数量最小~数量最大，概率单位为万分之一
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('giftConfigModal')">取消</button>
-      <button class="btn btn-primary" onclick="confirmGiftConfig()">确认</button>
+      <button class="btn btn-primary" onclick="confirmGiftConfig()">确定</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: Add Gift Item ===== -->
+<div class="modal-overlay" id="addGiftItemModal">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header">
+      <h2>添加礼包项目</h2>
+      <button class="modal-close-btn" onclick="closeModal('addGiftItemModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">项目类型 <span class="required">*</span></label>
+        <select class="form-input form-select" id="agi_type"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">数值 <span class="required">*</span></label>
+        <input type="number" class="form-input" id="agi_value" placeholder="请输入数值" min="1" step="1">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('addGiftItemModal')">取消</button>
+      <button class="btn btn-primary" onclick="confirmAddGiftItem()">提交</button>
     </div>
   </div>
 </div>
@@ -2105,6 +2234,10 @@ function initData(){
     { referral_id:3, app_id:23004, target_app_id:'10003', target_app_name:'快感传奇2', target_app_desc:'全新副本挑战，极品装备掉落', givepkg_id:0, givepkg_name:'无礼包', givepkg_items:[], reward_spec:'@once', reward_times:0, app_channel_name:'OPPO', status:0, launch_path:'', os:2, condition:'{}', banner_url:'', popup_url:'', recommend_url:'https://picsum.photos/seed/recommend1/400/200', icon_url:'https://picsum.photos/seed/mini1/200/200', sort:2, create_time:'2026-05-15 09:30:00', update_time:'2026-06-09 11:00:00' },
     { referral_id:4, app_id:23006, target_app_id:'10004', target_app_name:'快感传奇3', target_app_desc:'跨服争霸赛开启，王者对决', givepkg_id:31325, givepkg_name:'新手大礼包', givepkg_items:[{type:'银蛋',name:'银蛋',qty:2000000},{type:'物品',name:'[2100]新手武器',qty:1},{type:'奖券',name:'奖券',qty:20}], reward_spec:'@every 2h', reward_times:5, app_channel_name:'华为', status:1, launch_path:'/pages/gamehall/index', os:3, condition:'{"min_level":10}', banner_url:'https://picsum.photos/seed/banner2/400/200', popup_url:'https://picsum.photos/seed/popup1/300/400', recommend_url:'https://picsum.photos/seed/recommend1/400/200', icon_url:'https://picsum.photos/seed/puzzle1/200/200', sort:3, create_time:'2026-05-20 16:45:00', update_time:'2026-06-11 09:15:00' },
     { referral_id:5, app_id:23052, target_app_id:'10005', target_app_name:'快感传奇4', target_app_desc:'全新职业上线，登录即送豪礼', givepkg_id:31326, givepkg_name:'老用户回馈礼包', givepkg_items:[{type:'物品',name:'[2003]假期',qty:8},{type:'银蛋',name:'银蛋',qty:3500000},{type:'奖券',name:'奖券',qty:45}], reward_spec:'@monthly', reward_times:2, app_channel_name:'VIVO', status:1, launch_path:'/pages/legend/index', os:0, condition:'{}', banner_url:'https://picsum.photos/seed/banner1/400/200', popup_url:'', recommend_url:'https://picsum.photos/seed/recommend1/400/200', icon_url:'https://picsum.photos/seed/puzzle1/200/200', sort:4, create_time:'2026-05-25 11:00:00', update_time:'2026-06-12 09:00:00' },
+    { referral_id:6, app_id:23001, target_app_id:'10006', target_app_name:'计划归档项目', target_app_desc:'此配置将在下季度下线', givepkg_id:0, givepkg_name:'无礼包', givepkg_items:[], reward_spec:'@monthly', reward_times:0, app_channel_name:'小米', status:2, launch_path:'', os:0, condition:'{}', banner_url:'', popup_url:'', recommend_url:'', icon_url:'https://picsum.photos/seed/mini2/200/200', sort:5, create_time:'2026-05-28 08:00:00', update_time:'2026-06-10 10:00:00' },
+    { referral_id:7, app_id:23003, target_app_id:'10007', target_app_name:'归档中项目', target_app_desc:'正在执行归档操作', givepkg_id:0, givepkg_name:'无礼包', givepkg_items:[], reward_spec:'@daily', reward_times:0, app_channel_name:'OPPO', status:3, launch_path:'', os:1, condition:'{}', banner_url:'', popup_url:'', recommend_url:'', icon_url:'https://picsum.photos/seed/puzzle2/200/200', sort:6, create_time:'2026-06-01 12:00:00', update_time:'2026-06-13 14:00:00' },
+    { referral_id:8, app_id:23004, target_app_id:'10008', target_app_name:'已归档项目', target_app_desc:'已完成归档，不在前台展示', givepkg_id:0, givepkg_name:'无礼包', givepkg_items:[], reward_spec:'@once', reward_times:0, app_channel_name:'华为', status:4, launch_path:'', os:2, condition:'{}', banner_url:'', popup_url:'', recommend_url:'', icon_url:'https://picsum.photos/seed/game3/200/200', sort:7, create_time:'2026-06-05 15:00:00', update_time:'2026-06-08 16:00:00' },
+    { referral_id:9, app_id:23006, target_app_id:'10009', target_app_name:'归档失败项目', target_app_desc:'归档流程异常导致失败', givepkg_id:0, givepkg_name:'无礼包', givepkg_items:[], reward_spec:'@weekly', reward_times:0, app_channel_name:'VIVO', status:5, launch_path:'', os:3, condition:'{}', banner_url:'', popup_url:'', recommend_url:'', icon_url:'https://picsum.photos/seed/puzzle3/200/200', sort:8, create_time:'2026-06-08 09:00:00', update_time:'2026-06-14 10:00:00' },
   ];
   nextId = 100;
   renderTable();
@@ -2311,15 +2444,12 @@ function selectAppCombo(id,label){
   document.getElementById('filterAppInput').value = label;
   document.getElementById('filterAppCombo').classList.add('has-value');
   closeAppCombo();
-  filterTable();
 }
 function clearAppCombo(){
   document.getElementById('filterApp').value = '';
   document.getElementById('filterAppInput').value = '';
   document.getElementById('filterAppCombo').classList.remove('has-value');
-  filterTable();
 }
-
 function renderChannelCombo(filter){
   const dd = document.getElementById('filterChannelDropdown');
   const items = filter ? channelList.filter(c => String(c.id).includes(filter) || c.name.includes(filter)) : channelList;
@@ -2335,15 +2465,12 @@ function selectChannelCombo(name,label){
   document.getElementById('filterChannelInput').value = label;
   document.getElementById('filterChannelCombo').classList.add('has-value');
   closeChannelCombo();
-  filterTable();
 }
 function clearChannelCombo(){
   document.getElementById('filterChannel').value = '';
   document.getElementById('filterChannelInput').value = '';
   document.getElementById('filterChannelCombo').classList.remove('has-value');
-  filterTable();
 }
-
 // ========== FILTER HINT (click-to-show) ==========
 const filterHintData = {
   app:{
@@ -2371,33 +2498,37 @@ const filterHintData = {
     input:'可选择时间区间，只能在区间中才展示'
   }
 };
+let hintShowTimer = null;
 let hintHideTimer = null;
 let hintHoverOnPopup = false;
 function showFilterHint(e, hintId){
   e.stopPropagation();
   const d = filterHintData[hintId];
   if(!d) return;
+  clearTimeout(hintShowTimer);
   clearTimeout(hintHideTimer);
-  const pop = document.getElementById('filterHintPopup');
-  pop.innerHTML = '<div class="fh-title">说明：</div>' +
-    '<div class="fh-row">1、<b>字段：</b>' + d.label + '</div>' +
-    '<div class="fh-row">2、<b>是否必填：</b>' + d.required + '</div>' +
-    '<div class="fh-row">3、<b>精确/模糊：</b>' + d.match + '</div>' +
-    '<div class="fh-row">4、<b>控权：</b>' + d.auth + '</div>' +
-    '<div class="fh-row">5、<b>输入：</b>' + d.input + '</div>';
-  const rect = e.currentTarget.getBoundingClientRect();
-  let left = rect.right + 8;
-  let top = rect.top - 10;
-  if(left + 280 > window.innerWidth) left = rect.left - 268;
-  if(left < 8) left = 8;
-  if(top < 8) top = 8;
-  pop.style.left = left + 'px';
-  pop.style.top = top + 'px';
-  pop._hintId = hintId;
-  pop.classList.add('show');
+  hintShowTimer = setTimeout(function(){
+    const pop = document.getElementById('filterHintPopup');
+    pop.innerHTML = '<div class="fh-title">说明：</div>' +
+      '<div class="fh-row">1、<b>字段：</b>' + d.label + '</div>' +
+      '<div class="fh-row">2、<b>是否必填：</b>' + d.required + '</div>' +
+      '<div class="fh-row">3、<b>精确/模糊：</b>' + d.match + '</div>' +
+      '<div class="fh-row">4、<b>控权：</b>' + d.auth + '</div>' +
+      '<div class="fh-row">5、<b>输入：</b>' + d.input + '</div>';
+    const rect = e.currentTarget.getBoundingClientRect();
+    let left = rect.right + 8;
+    let top = rect.top - 10;
+    if(left + 280 > window.innerWidth) left = rect.left - 268;
+    if(left < 8) left = 8;
+    if(top < 8) top = 8;
+    pop.style.left = left + 'px';
+    pop.style.top = top + 'px';
+    pop._hintId = hintId;
+    pop.classList.add('show');
+  }, 500);
 }
 function hideFilterHint(e, hintId){
-  // Delay hide to allow mouse to reach the popup
+  clearTimeout(hintShowTimer);
   hintHideTimer = setTimeout(function(){
     if(!hintHoverOnPopup){
       const pop = document.getElementById('filterHintPopup');
@@ -2758,78 +2889,132 @@ function updateGiftDisplay(){
   const display = document.getElementById('f_gift_display');
   document.getElementById('f_givepkg_id').value = tempGiftId;
   if(tempGiftId && tempGiftName){
-    display.value = `[${tempGiftId}]${tempGiftName}礼包`;
+    display.value = `[${tempGiftId}] ${tempGiftName}`;
+    display.readOnly = true;
   } else {
     display.value = '';
     display.placeholder = '点击右侧配置按钮配置礼包';
+    display.readOnly = false;
   }
 }
 function clearGift(){ clearGiftField(); }
 
-// ========== GIFT CONFIG SUB-MODAL ==========
+// ========== GIFT CONFIG ==========
+let giftItemSortCounter = 1;
+const giftItemTypes = [
+  {type:'银蛋',name:'银蛋'},
+  {type:'奖券',name:'奖券'},
+  {type:'物品',name:'[2003]假期'},
+  {type:'物品',name:'[1005]钻石'},
+  {type:'物品',name:'[2100]新手武器'},
+  {type:'物品',name:'[3001]强化石'},
+  {type:'物品',name:'[4002]经验药水'},
+];
+
 function openGiftConfigSub(){
   document.getElementById('gc_gift_name').value = tempGiftName || '';
-  renderGiftItemsEditor();
+  giftItemSortCounter = tempGiftItems.length + 1;
+  renderGiftItemsTable();
   openModal('giftConfigModal');
 }
-function renderGiftItemsEditor(){
-  const editor = document.getElementById('gcItemsEditor');
-  if(!tempGiftItems.length) { editor.innerHTML = '<p style="color:var(--text-tertiary);font-size:0.82rem;padding:8px 0">暂无奖励明细</p>'; return; }
-  editor.innerHTML = tempGiftItems.map((item, idx) => `
-    <div class="gift-item-row">
-      <select class="form-input form-select" data-idx="${idx}" data-field="type">
-        <option value="银蛋" ${item.type==='银蛋'?'selected':''}>银蛋</option>
-        <option value="奖券" ${item.type==='奖券'?'selected':''}>奖券</option>
-        <option value="物品" ${item.type==='物品'?'selected':''}>物品</option>
-      </select>
-      <input type="text" class="form-input" value="${item.name}" data-idx="${idx}" data-field="name" placeholder="道具名称">
-      <input type="number" class="form-input" value="${item.qty}" data-idx="${idx}" data-field="qty" placeholder="数量" style="width:120px;flex:none">
-      <button type="button" class="gift-item-remove" onclick="removeGiftItemRow(${idx})">✕</button>
-    </div>
+
+function renderGiftItemsTable(){
+  const tbody = document.getElementById('gcItemsTbody');
+  if(!tempGiftItems.length){
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-tertiary);padding:16px">暂无奖励项目</td></tr>';
+    return;
+  }
+  tbody.innerHTML = tempGiftItems.map((item, idx) => `
+    <tr>
+      <td><input type="number" class="gc-sort-input" value="${item.sort||idx+1}" data-idx="${idx}" onchange="updateGiftItemSort(this.dataset.idx,this.value)" min="1"></td>
+      <td>${item.type}</td>
+      <td>${item.name}</td>
+      <td><input type="number" class="gc-qty-input" id="gcQty${idx}" value="${item.qty}" readonly></td>
+      <td>
+        <button type="button" class="gc-row-btn edit-btn" id="gcEdit${idx}" onclick="startEditQty(${idx})">修改</button>
+        <button type="button" class="gc-row-btn save-btn" id="gcSave${idx}" onclick="saveEditQty(${idx})">保存</button>
+        <button type="button" class="gc-row-btn del-btn" onclick="removeGiftItem(${idx})">删除</button>
+      </td>
+    </tr>
   `).join('');
-  // Bind change events
-  editor.querySelectorAll('input, select').forEach(el => {
-    el.addEventListener('change', function(){
-      const idx = parseInt(this.dataset.idx);
-      const field = this.dataset.field;
-      if(!isNaN(idx) && field && tempGiftItems[idx]){
-        tempGiftItems[idx][field] = field === 'qty' ? (parseInt(this.value) || 0) : this.value;
-      }
-    });
-  });
 }
-function addGiftItemRow(){
-  tempGiftItems.push({ type:'银蛋', name:'', qty:0 });
-  renderGiftItemsEditor();
+
+function updateGiftItemSort(idx, val){
+  const v = parseInt(val) || (parseInt(idx) + 1);
+  idx = parseInt(idx);
+  if(tempGiftItems[idx]) tempGiftItems[idx].sort = v;
 }
-function removeGiftItemRow(idx){
+
+function startEditQty(idx){
+  const qtyEl = document.getElementById('gcQty' + idx);
+  const editBtn = document.getElementById('gcEdit' + idx);
+  const saveBtn = document.getElementById('gcSave' + idx);
+  qtyEl.readOnly = false;
+  qtyEl.classList.add('editable');
+  qtyEl.focus();
+  editBtn.style.display = 'none';
+  saveBtn.style.display = 'inline-block';
+}
+
+function saveEditQty(idx){
+  const qtyEl = document.getElementById('gcQty' + idx);
+  const editBtn = document.getElementById('gcEdit' + idx);
+  const saveBtn = document.getElementById('gcSave' + idx);
+  const val = parseInt(qtyEl.value) || 0;
+  if(tempGiftItems[idx]) tempGiftItems[idx].qty = val;
+  qtyEl.value = val;
+  qtyEl.readOnly = true;
+  qtyEl.classList.remove('editable');
+  editBtn.style.display = 'inline-block';
+  saveBtn.style.display = 'none';
+}
+
+function removeGiftItem(idx){
   tempGiftItems.splice(idx, 1);
-  renderGiftItemsEditor();
+  renderGiftItemsTable();
 }
+
+// Add gift item sub-modal
+function openAddGiftItemModal(){
+  const sel = document.getElementById('agi_type');
+  sel.innerHTML = giftItemTypes.map((t, i) => `<option value="${i}">${t.type} - ${t.name}</option>`).join('');
+  document.getElementById('agi_value').value = '';
+  openModal('addGiftItemModal');
+}
+
+function confirmAddGiftItem(){
+  const typeIdx = parseInt(document.getElementById('agi_type').value);
+  const val = parseInt(document.getElementById('agi_value').value) || 0;
+  if(isNaN(typeIdx) || val <= 0){ showToast('请完整填写项目类型和数值', 'error'); return; }
+  const chosen = giftItemTypes[typeIdx];
+  tempGiftItems.push({
+    sort: tempGiftItems.length + 1,
+    type: chosen.type,
+    name: chosen.name,
+    qty: val
+  });
+  closeModal('addGiftItemModal');
+  renderGiftItemsTable();
+}
+
 function confirmGiftConfig(){
   const gname = document.getElementById('gc_gift_name').value.trim();
-  // Read current items from editor
-  const editor = document.getElementById('gcItemsEditor');
-  const rows = editor.querySelectorAll('.gift-item-row');
-  const items = [];
-  rows.forEach(row => {
-    const sel = row.querySelector('[data-field="type"]');
-    const nameEl = row.querySelector('[data-field="name"]');
-    const qtyEl = row.querySelector('[data-field="qty"]');
-    if(sel && nameEl && qtyEl){
-      items.push({ type:sel.value, name:nameEl.value, qty:parseInt(qtyEl.value)||0 });
+  if(!gname){ showToast('请填写礼包名称', 'error'); return; }
+  // Sync sort values from inputs
+  document.querySelectorAll('.gc-sort-input').forEach(el => {
+    const idx = parseInt(el.dataset.idx);
+    if(!isNaN(idx) && tempGiftItems[idx]){
+      tempGiftItems[idx].sort = parseInt(el.value) || (idx + 1);
     }
   });
-  tempGiftId = 0;
+  tempGiftId = 314123; // example gift ID
   tempGiftName = gname;
-  tempGiftItems = items;
-  if(gname){
-    const display = document.getElementById('f_gift_display');
-    display.value = `[${tempGiftId}]${gname}礼包`;
-  }
-  updateGiftDisplay();
+  const display = document.getElementById('f_gift_display');
+  document.getElementById('f_givepkg_id').value = tempGiftId;
+  display.value = `[${tempGiftId}] ${gname}`;
+  display.readOnly = true;
   closeModal('giftConfigModal');
-  showToast('礼包配置已更新');
+  showToast('礼包配置已保存');
 }
 
 // ========== CHANNEL TRANSFER ==========
@@ -3536,39 +3721,194 @@ function setDateRangePreset(preset){
   document.getElementById('drpEnd').value = fmtDate(e);
 }
 
-// ========== FILTER DATE RANGE (Referral config) ==========
+// ========== FILTER DATE RANGE CALENDAR ==========
+let drCalOffset = 0;        // month offset (0 = current month)
+let drCalStart = null;      // selected start Date
+let drCalEnd = null;        // selected end Date
+let drCalPending = null;    // mouse hover preview end
+
+function drCalMonth(delta){
+  drCalOffset += delta;
+  renderDrCalendars();
+}
+function drCalYearMonth(offset){
+  const base = new Date();
+  const d = new Date(base.getFullYear(), base.getMonth() + offset, 1);
+  return {year:d.getFullYear(), month:d.getMonth()};
+}
+function drPad(n){ return n < 10 ? '0' + n : '' + n; }
+
+function renderDrCalendars(){
+  const weekdays = ['日','一','二','三','四','五','六'];
+  const today = new Date(); today.setHours(0,0,0,0);
+  const todayKey = today.getFullYear() + '-' + drPad(today.getMonth()+1) + '-' + drPad(today.getDate());
+
+  let startTs = null, endTs = null;
+  if(drCalStart){ startTs = new Date(drCalStart); startTs.setHours(0,0,0,0); startTs = startTs.getTime(); }
+  if(drCalEnd){ endTs = new Date(drCalEnd); endTs.setHours(0,0,0,0); endTs = endTs.getTime(); }
+
+  function inRange(y,m,d){
+    if(!startTs) return false;
+    const ts = new Date(y,m,d).getTime();
+    if(endTs) return ts >= startTs && ts <= endTs;
+    if(drCalPending){ const pts = new Date(drCalPending); pts.setHours(0,0,0,0); return ts >= Math.min(startTs,pts.getTime()) && ts <= Math.max(startTs,pts.getTime()); }
+    return ts === startTs;
+  }
+  function isStart(y,m,d){ return startTs && new Date(y,m,d).getTime() === startTs; }
+  function isEnd(y,m,d){ return endTs && new Date(y,m,d).getTime() === endTs; }
+
+  for(let ci = 0; ci < 2; ci++){
+    const ym = drCalYearMonth(drCalOffset + ci);
+    const label = document.getElementById(ci === 0 ? 'drLabelLeft' : 'drLabelRight');
+    label.textContent = ym.year + '年 ' + (ym.month + 1) + '月';
+
+    const daysEl = document.getElementById(ci === 0 ? 'drDaysLeft' : 'drDaysRight');
+    let html = '';
+    const firstDay = new Date(ym.year, ym.month, 1);
+    const lastDay = new Date(ym.year, ym.month + 1, 0);
+    const startDow = firstDay.getDay();
+
+    // Fill leading blanks
+    for(let i = 0; i < startDow; i++){
+      html += '<span></span>';
+    }
+    // Days
+    for(let d = 1; d <= lastDay.getDate(); d++){
+      const key = ym.year + '-' + drPad(ym.month+1) + '-' + drPad(d);
+      const cls = [];
+      if(d < 1) cls.push('dim');
+      if(key === todayKey) cls.push('today');
+      if(inRange(ym.year, ym.month, d)) cls.push('in-range');
+      if(isStart(ym.year, ym.month, d)) cls.push('range-start');
+      if(isEnd(ym.year, ym.month, d)) cls.push('range-end');
+      html += '<span class="dr-day' + (cls.length ? ' ' + cls.join(' ') : '') + '" data-date="' + key + '" onclick="drSelectDay(event,\'' + key + '\')" onmouseenter="drDayHover(event,\'' + key + '\')" onmouseleave="drDayHoverEnd()">' + d + '</span>';
+    }
+    daysEl.innerHTML = html;
+  }
+  updateDrRangeLabel();
+}
+
+function drSelectDay(e, key){
+  e.stopPropagation();
+  const parts = key.split('-');
+  const sel = new Date(+parts[0], +parts[1] - 1, +parts[2]);
+  if(!drCalStart || (drCalEnd !== null)){
+    // Start new selection
+    drCalStart = sel; drCalEnd = null;
+  } else {
+    // Second click → set end
+    if(sel.getTime() < drCalStart.getTime()){
+      drCalEnd = new Date(drCalStart); drCalStart = sel;
+    } else {
+      drCalEnd = sel;
+    }
+  }
+  drCalPending = null;
+  renderDrCalendars();
+}
+
+function drDayHover(e, key){
+  if(!drCalStart || drCalEnd) return;
+  const parts = key.split('-');
+  drCalPending = new Date(+parts[0], +parts[1] - 1, +parts[2]);
+  renderDrCalendars();
+}
+function drDayHoverEnd(){
+  if(!drCalStart || drCalEnd) return;
+  drCalPending = null;
+  renderDrCalendars();
+}
+
+function updateDrRangeLabel(){
+  const el = document.getElementById('drRangeLabel');
+  const st = document.getElementById('drpStartTime').value;
+  const et = document.getElementById('drpEndTime').value;
+  if(drCalStart && drCalEnd){
+    const start = drCalStart;
+    const end = drCalEnd;
+    document.getElementById('filterDrpStart').value = fmtDate(start) + ' ' + st;
+    document.getElementById('filterDrpEnd').value = fmtDate(end) + ' ' + et;
+    el.innerHTML = '<strong>' + fmtDate(start) + '</strong> 至 <strong>' + fmtDate(end) + '</strong>';
+  } else if(drCalStart){
+    document.getElementById('filterDrpStart').value = fmtDate(drCalStart) + ' ' + st;
+    document.getElementById('filterDrpEnd').value = '';
+    el.innerHTML = '已选 <strong>' + fmtDate(drCalStart) + '</strong> — 请再点击结束日期';
+  } else {
+    document.getElementById('filterDrpStart').value = '';
+    document.getElementById('filterDrpEnd').value = '';
+    el.innerHTML = '请点击日历选择起止日期';
+  }
+}
+function onDrpTimeChange(){ updateDrRangeLabel(); }
+
 function openFilterDateRangePopup(){
   const pop = document.getElementById('filterDateRangePopup');
   pop.classList.toggle('show');
   if(pop.classList.contains('show')){
-    const inp = document.getElementById('filterDateRange');
-    const rect = inp.getBoundingClientRect();
-    pop.style.left = '0';
-    pop.style.top = (rect.bottom + 4) + 'px';
+    drCalOffset = 0;
+    const sVal = document.getElementById('filterDrpStart').value;
+    const eVal = document.getElementById('filterDrpEnd').value;
+    if(sVal && eVal){
+      const sDate = new Date(sVal);
+      const eDate = new Date(eVal);
+      if(!isNaN(sDate)){ drCalStart = new Date(sDate.getFullYear(), sDate.getMonth(), sDate.getDate()); }
+      if(!isNaN(eDate)){ drCalEnd = new Date(eDate.getFullYear(), eDate.getMonth(), eDate.getDate()); }
+      const sTime = sVal.length >= 16 ? sVal.slice(11, 19) : '00:00:00';
+      const eTime = eVal.length >= 16 ? eVal.slice(11, 19) : '23:59:59';
+      document.getElementById('drpStartTime').value = sTime;
+      document.getElementById('drpEndTime').value = eTime;
+    } else {
+      drCalStart = null; drCalEnd = null;
+      document.getElementById('drpStartTime').value = '00:00:00';
+      document.getElementById('drpEndTime').value = '23:59:59';
+    }
+    drCalPending = null;
+    renderDrCalendars();
+    highlightDrPreset();
   }
 }
 function closeFilterDateRangePopup(){
   document.getElementById('filterDateRangePopup').classList.remove('show');
 }
+
+function highlightDrPreset(){
+  const sVal = document.getElementById('filterDrpStart').value;
+  const eVal = document.getElementById('filterDrpEnd').value;
+  document.querySelectorAll('#filterDateRangePopup .dr-preset').forEach(p => p.classList.remove('active'));
+  if(!sVal || !eVal) return;
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const sDate = new Date(sVal);
+  const eDate = new Date(eVal);
+  if(sDate.getTime() === today.getTime() && eDate.getTime() === today.getTime()){
+    document.querySelector('#filterDateRangePopup .dr-preset').classList.add('active');
+  }
+}
+
 function confirmFilterDateRange(){
   const s = document.getElementById('filterDrpStart').value;
   const e = document.getElementById('filterDrpEnd').value;
   document.getElementById('filterTimeStart').value = s;
   document.getElementById('filterTimeEnd').value = e;
-  document.getElementById('filterDateRange').value = s && e ? `${s.replace('T',' ')} ~ ${e.replace('T',' ')}` : '';
+  document.getElementById('filterDateRange').value = s && e ? `${s.slice(0,10)} ${s.slice(11,19)} ~ ${e.slice(0,10)} ${e.slice(11,19)}` : '';
   closeFilterDateRangePopup();
-  filterTable();
 }
+
 function clearFilterDateRange(){
   document.getElementById('filterDrpStart').value = '';
   document.getElementById('filterDrpEnd').value = '';
   document.getElementById('filterTimeStart').value = '';
   document.getElementById('filterTimeEnd').value = '';
   document.getElementById('filterDateRange').value = '';
+  document.getElementById('drpStartTime').value = '00:00:00';
+  document.getElementById('drpEndTime').value = '23:59:59';
+  drCalStart = null; drCalEnd = null;
+  drCalPending = null;
   closeFilterDateRangePopup();
   filterTable();
 }
-function setFilterDateRangePreset(preset){
+
+function setFilterDateRangePreset(preset, btnEl){
   const now = new Date();
   let s, e;
   if(preset === 'today'){ s = e = now; }
@@ -3587,8 +3927,17 @@ function setFilterDateRangePreset(preset){
     s = new Date(now); s.setDate(now.getDate() - 29);
     e = new Date(now);
   }
-  document.getElementById('filterDrpStart').value = fmtDateTime(s);
-  document.getElementById('filterDrpEnd').value = fmtDateTime(e);
+  drCalStart = new Date(s.getFullYear(), s.getMonth(), s.getDate());
+  drCalEnd = new Date(e.getFullYear(), e.getMonth(), e.getDate());
+  drCalPending = null;
+  const st = document.getElementById('drpStartTime').value;
+  const et = document.getElementById('drpEndTime').value;
+  document.getElementById('filterDrpStart').value = fmtDate(s) + ' ' + st;
+  document.getElementById('filterDrpEnd').value = fmtDate(e) + ' ' + et;
+  renderDrCalendars();
+  // Highlight active preset
+  document.querySelectorAll('#filterDateRangePopup .dr-preset').forEach(p => p.classList.remove('active'));
+  if(btnEl) btnEl.classList.add('active');
 }
 // Close popup on outside click
 document.addEventListener('click', function(e){
@@ -3598,13 +3947,10 @@ document.addEventListener('click', function(e){
     closeDateRangePopup();
   }
   // Close filter daterange popup
-  const fwrap = document.querySelector('#filterDateRange');
   const fpopup = document.getElementById('filterDateRangePopup');
-  if(fwrap && fpopup && fpopup.classList.contains('show')){
-    const fparent = fwrap.closest('.daterange-wrap');
-    if(fparent && !fparent.contains(e.target)){
-      closeFilterDateRangePopup();
-    }
+  const fwrap = document.querySelector('.filter-daterange');
+  if(fpopup && fpopup.classList.contains('show') && fwrap && !fwrap.contains(e.target)){
+    closeFilterDateRangePopup();
   }
 });
 
