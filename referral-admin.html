@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>联运应用配置管理</title>
+<title>应用引流配置管理</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -329,6 +329,7 @@ body.theme-light .filter-select{
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' fill='%23909399' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
 }
 .filter-select:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
+.filter-select option{color:var(--text-primary);background:var(--bg-card)}
 
 /* Search Box */
 .search-box{
@@ -403,17 +404,31 @@ th{
   font-size:0.78rem;
   color:var(--text-tertiary);
   border-bottom:1px solid var(--border-color);
+  border-right:1px solid var(--border-color);
   white-space:nowrap;
   user-select:none;
   position:sticky;top:0;z-index:2;
 }
+th:last-child{border-right:none}
+th .col-resize-handle{
+  position:absolute;right:0;top:0;bottom:0;width:4px;cursor:col-resize;
+  background:transparent;z-index:3;
+}
+th .col-resize-handle:hover,th .col-resize-handle.active{background:var(--accent)}
+.col-resize-overlay{
+  position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;cursor:col-resize;display:none;
+}
+.col-resize-overlay.active{display:block}
 td{
-  padding:10px 12px;
+  padding:0 12px;
+  height:42px;
   font-size:0.85rem;
   color:var(--text-primary);
   border-bottom:1px solid var(--border-color);
+  border-right:1px solid var(--border-color);
   vertical-align:middle;
 }
+td:last-child{border-right:none}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:var(--bg-hover)}
 
@@ -444,17 +459,6 @@ tr:hover td{background:var(--bg-hover)}
   display:block;
 }
 .cell-img-wrap:hover .cell-img{transform:scale(1.15);z-index:5;position:relative}
-.cell-sort{
-  font-family:var(--font-mono);
-  color:var(--accent-light);
-  text-align:center;
-  cursor:pointer;
-  padding:2px 8px;
-  border-radius:var(--radius-sm);
-  display:inline-block;
-  min-width:28px;
-}
-.cell-sort:hover{background:var(--accent-glow)}
 .cell-time{color:var(--text-tertiary);font-family:var(--font-mono);white-space:nowrap;cursor:pointer;transition:var(--transition);padding:2px 6px;border-radius:var(--radius-sm);display:inline-block}
 .cell-time:hover{background:var(--accent-glow);color:var(--accent-light)}
 .cell-reward{font-family:var(--font-mono);color:var(--text-secondary)}
@@ -492,27 +496,33 @@ th.sortable .sort-arrow.active{opacity:1;color:var(--accent-light)}
 }
 .badge-active{background:var(--badge-active-bg);color:var(--success)}
 .badge-inactive{background:var(--badge-inactive-bg);color:var(--danger)}
+.badge-planned{background:rgba(230,162,60,0.15);color:#e6a23c}
+.badge-archiving{background:rgba(64,158,255,0.12);color:#409eff}
 .badge-archived{background:var(--bg-hover);color:var(--text-tertiary)}
+.badge-failed{background:rgba(245,108,108,0.12);color:#f56c6c}
 .badge-dot{width:5px;height:5px;border-radius:50%;display:inline-block}
 .badge-dot.active{background:var(--success)}
 .badge-dot.inactive{background:var(--danger)}
+.badge-dot.planned{background:#e6a23c}
+.badge-dot.archiving{background:#409eff}
 .badge-dot.archived{background:var(--text-tertiary)}
+.badge-dot.failed{background:#f56c6c}
 
 /* Action buttons in table */
-.cell-actions{white-space:nowrap;display:flex;gap:6px;align-items:center}
+.cell-actions{white-space:nowrap;display:flex;gap:6px;align-items:center;min-width:130px}
 .action-btn-group{position:relative;display:inline-flex}
 .action-btn-main{
   display:inline-flex;align-items:center;gap:4px;
-  padding:0 10px;height:30px;border-radius:var(--radius-sm);
-  font-family:var(--font);font-size:0.8rem;font-weight:500;
+  padding:0 8px;height:26px;border-radius:var(--radius-sm);
+  font-family:var(--font);font-size:0.75rem;font-weight:500;
   border:1px solid var(--accent);background:transparent;
   color:var(--accent);cursor:pointer;transition:var(--transition);
 }
 .action-btn-main:hover{background:var(--accent-glow)}
-.action-btn-main svg{width:14px;height:14px}
+.action-btn-main svg{width:12px;height:12px}
 .action-dropdown-toggle{
   display:inline-flex;align-items:center;justify-content:center;
-  width:26px;height:30px;border-radius:0 var(--radius-sm) var(--radius-sm) 0;
+  width:22px;height:26px;border-radius:0 var(--radius-sm) var(--radius-sm) 0;
   border:1px solid var(--accent);border-left:none;
   background:transparent;color:var(--accent);cursor:pointer;
   transition:var(--transition);font-size:0.65rem;
@@ -545,13 +555,13 @@ th.sortable .sort-arrow.active{opacity:1;color:var(--accent-light)}
 .action-dropdown-item svg{width:14px;height:14px}
 .action-detail-btn{
   display:inline-flex;align-items:center;gap:4px;
-  padding:0 10px;height:30px;border-radius:var(--radius-sm);
-  font-family:var(--font);font-size:0.8rem;font-weight:500;
+  padding:0 8px;height:26px;border-radius:var(--radius-sm);
+  font-family:var(--font);font-size:0.75rem;font-weight:500;
   border:1px solid var(--accent);background:var(--accent);
   color:#fff;cursor:pointer;transition:var(--transition);
 }
 .action-detail-btn:hover{filter:brightness(1.15);box-shadow:0 2px 8px var(--accent-glow)}
-.action-detail-btn svg{width:14px;height:14px}
+.action-detail-btn svg{width:12px;height:12px}
 
 /* Checkbox */
 .table-checkbox{width:15px;height:15px;accent-color:var(--accent);cursor:pointer}
@@ -598,6 +608,23 @@ th.sortable .sort-arrow.active{opacity:1;color:var(--accent-light)}
 .batch-bar .btn{background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.2);height:30px;padding:0 12px;font-size:0.8rem}
 .batch-bar .btn:hover{background:rgba(255,255,255,0.25)}
 .batch-bar .btn-close{margin-left:auto;background:transparent;border:none;color:rgba(255,255,255,0.7);cursor:pointer;font-size:0.9rem;padding:2px}
+
+/* Batch dropdown */
+.batch-dropdown-arrow{font-size:0.7rem;margin-left:4px}
+.batch-dropdown-menu{
+  position:absolute;top:calc(100% + 4px);left:0;z-index:500;
+  background:var(--bg-card);border:1px solid var(--border-color);
+  border-radius:var(--radius-md);box-shadow:0 4px 16px rgba(0,0,0,0.25);
+  min-width:120px;display:none;
+}
+.batch-dropdown-menu.show{display:block}
+.batch-dropdown-item{
+  padding:8px 14px;font-size:0.84rem;color:var(--text-primary);
+  cursor:pointer;transition:var(--transition);
+}
+.batch-dropdown-item:hover{background:var(--accent-glow);color:var(--accent-light)}
+.batch-dropdown-item:first-child{border-radius:var(--radius-md) var(--radius-md) 0 0}
+.batch-dropdown-item:last-child{border-radius:0 0 var(--radius-md) var(--radius-md)}
 
 /* ===== MODALS ===== */
 .modal-overlay{
@@ -683,15 +710,27 @@ textarea.form-input{height:auto;padding:8px 10px;resize:vertical;min-height:54px
 /* Field hint tooltip — shows data-hint content on hover */
 [data-hint]{position:relative}
 [data-hint]::after{
-  content:attr(data-hint);position:absolute;left:0;top:calc(100% + 4px);
-  background:var(--bg-card);color:var(--text-secondary);
+  content:attr(data-hint);position:absolute;left:0;top:calc(100% + 6px);
+  background:var(--bg-card);color:var(--text-primary);
   border:1px solid var(--border-color);border-radius:var(--radius-sm);
-  padding:4px 8px;font-size:0.7rem;white-space:normal;max-width:280px;
-  z-index:10;box-shadow:0 2px 8px rgba(0,0,0,0.15);
-  opacity:0;pointer-events:none;transition:opacity 0.15s;
+  padding:8px 10px;font-size:0.76rem;white-space:pre-wrap;max-width:300px;
+  z-index:10;box-shadow:0 4px 12px rgba(0,0,0,0.2);
+  opacity:0;pointer-events:none;transition:opacity 0.15s;line-height:1.5;
 }
 [data-hint]:hover::after{opacity:1}
 [data-hint]:focus::after{opacity:1}
+
+/* Filter hint tooltip (click-to-show) */
+.filter-hint-popup{
+  position:fixed;z-index:2000;
+  background:var(--bg-card);border:1px solid var(--border-color);
+  border-radius:var(--radius-md);box-shadow:0 4px 20px rgba(0,0,0,0.3);
+  width:260px;padding:12px 14px;display:none;line-height:1.7;
+}
+.filter-hint-popup.show{display:block}
+.fh-title{color:#e74c3c;font-size:0.82rem;font-weight:600;margin-bottom:6px}
+.fh-row{font-size:0.8rem;color:var(--text-primary)}
+.fh-row b{font-weight:600}
 .form-section-title{
   grid-column:1/-1;
   font-size:0.82rem;
@@ -796,6 +835,40 @@ textarea.form-input{height:auto;padding:8px 10px;resize:vertical;min-height:54px
 .toast.success{border-color:var(--success)}
 .toast.error{border-color:var(--danger)}
 
+/* Inline field error */
+.field-error{
+  display:none;font-size:0.75rem;color:#e74c3c;margin-top:4px;
+}
+.field-error.show{display:block}
+.form-input.error,.filter-combo.error input{border-color:#e74c3c !important;box-shadow:0 0 0 2px rgba(231,76,60,0.15)}
+
+/* Delay popup */
+.delay-popup-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:2100;display:none;align-items:center;justify-content:center}
+.delay-popup-overlay.show{display:flex}
+.delay-popup{
+  background:var(--bg-card);border:1px solid var(--border-color);
+  border-radius:var(--radius-lg);padding:20px 24px;width:300px;
+  box-shadow:0 8px 32px rgba(0,0,0,0.3);
+}
+.delay-popup h3{font-size:0.95rem;color:var(--text-primary);margin:0 0 14px}
+.delay-popup label{font-size:0.82rem;color:var(--text-secondary);display:block;margin-bottom:6px}
+.delay-popup .delay-input-row{display:flex;gap:8px;align-items:center}
+.delay-popup .delay-input-row input{flex:1;height:34px;padding:0 10px;border:1px solid var(--border-color);border-radius:var(--radius-md);background:var(--bg-input);color:var(--text-primary);font-size:0.85rem;outline:none}
+.delay-popup .delay-input-row input:focus{border-color:var(--accent)}
+.delay-popup .delay-unit{font-size:0.82rem;color:var(--text-secondary);white-space:nowrap}
+.delay-popup .delay-btns{display:flex;gap:8px;margin-top:16px;justify-content:flex-end}
+.delay-popup .delay-btns button{padding:6px 16px;font-size:0.82rem;border-radius:var(--radius-md);cursor:pointer;border:none}
+.delay-popup .delay-btns .btn-cancel{background:var(--bg-hover);color:var(--text-secondary)}
+.delay-popup .delay-btns .btn-confirm{background:var(--accent);color:#fff}
+.delay-popup .delay-btns .btn-cancel:hover{color:var(--text-primary)}
+.delay-popup .delay-btns .btn-confirm:hover{background:var(--accent-hover)}
+
+.link-btn{
+  display:inline-block;font-size:0.78rem;color:var(--accent-light);
+  cursor:pointer;margin-top:6px;text-decoration:none;
+}
+.link-btn:hover{text-decoration:underline}
+
 /* Confirm dialog */
 .confirm-text{font-size:0.92rem;text-align:center;padding:14px 0;color:var(--text-secondary)}
 .confirm-text strong{color:var(--text-primary);font-weight:600}
@@ -856,7 +929,7 @@ textarea.form-input{height:auto;padding:8px 10px;resize:vertical;min-height:54px
   position:absolute;top:calc(100% + 6px);left:0;z-index:500;
   background:var(--bg-card);border:1px solid var(--border-color);
   border-radius:var(--radius-md);box-shadow:0 8px 30px rgba(0,0,0,0.3);
-  width:300px;padding:14px;display:none;
+  width:380px;padding:14px;display:none;
 }
 .daterange-popup.show{display:block}
 .daterange-header{font-size:0.82rem;font-weight:600;color:var(--text-primary);margin-bottom:10px}
@@ -892,6 +965,43 @@ textarea.form-input{height:auto;padding:8px 10px;resize:vertical;min-height:54px
 .col-config-item.dragging{opacity:0.5;border-style:dashed}
 .col-config-item.drag-over{border-color:var(--accent);background:var(--accent-glow)}
 
+/* Searchable combo filter */
+.filter-combo{position:relative;display:inline-block}
+.filter-combo input{
+  width:150px;height:34px;font-size:0.85rem;padding:0 10px;
+  border:1px solid var(--border-color);border-radius:var(--radius-md);
+  background:var(--bg-input);color:var(--text-primary);outline:none;cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' fill='%236a6a88' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 10px center;
+  padding-right:26px;
+}
+body.theme-light .filter-combo input{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' fill='%23909399' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
+}
+.filter-combo input:focus{border-color:var(--accent)}
+.filter-combo .combo-dropdown{
+  position:absolute;top:calc(100% + 2px);left:0;right:0;z-index:600;
+  background:var(--bg-card);border:1px solid var(--border-color);
+  border-radius:var(--radius-md);box-shadow:0 4px 16px rgba(0,0,0,0.2);
+  max-height:240px;overflow-y:auto;display:none;
+}
+.filter-combo .combo-dropdown.show{display:block}
+.filter-combo .combo-option{
+  padding:6px 10px;font-size:0.82rem;color:var(--text-primary);
+  cursor:pointer;transition:var(--transition);
+}
+.filter-combo .combo-option:hover,.filter-combo .combo-option.highlight{background:var(--accent-glow);color:var(--accent-light)}
+.filter-combo .combo-option.selected{background:var(--accent-glow);color:var(--accent-light);font-weight:500}
+.filter-combo .combo-empty{padding:10px;font-size:0.78rem;color:var(--text-tertiary);text-align:center}
+.filter-combo .combo-clear{
+  position:absolute;right:6px;top:50%;transform:translateY(-50%);
+  background:transparent;border:none;color:var(--text-tertiary);
+  cursor:pointer;font-size:0.7rem;display:none;z-index:2;
+}
+.filter-combo.has-value .combo-clear{display:block}
+.filter-combo.has-value .combo-clear:hover{color:var(--text-primary)}
+
 /* Column config popover */
 .col-config-popover{
   position:fixed;z-index:1000;
@@ -922,8 +1032,28 @@ textarea.form-input{height:auto;padding:8px 10px;resize:vertical;min-height:54px
   content:'';position:absolute;top:2px;left:2px;
   width:16px;height:16px;border-radius:50%;
   background:#fff;transition:var(--transition);
+}.col-config-item .col-toggle.on::after{left:18px}
+
+/* Field info popover */
+.field-info-popover{
+  position:fixed;z-index:2000;
+  background:var(--bg-card);border:1px solid var(--border-color);
+  border-radius:var(--radius-md);box-shadow:0 8px 30px rgba(0,0,0,0.35);
+  width:340px;padding:16px;display:none;line-height:1.6;
 }
-.col-config-item .col-toggle.on::after{left:18px}
+.field-info-popover.show{display:block}
+.field-info-popover .fi-title{font-size:0.9rem;font-weight:600;color:var(--text-primary);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border-color)}
+.field-info-popover .fi-row{display:flex;font-size:0.8rem;padding:3px 0}
+.field-info-popover .fi-label{width:72px;flex-shrink:0;color:var(--text-tertiary)}
+.field-info-popover .fi-value{flex:1;color:var(--text-primary);word-break:break-all}
+.field-info-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:16px;height:16px;font-size:0.7rem;line-height:1;
+  cursor:pointer;border-radius:50%;color:var(--text-tertiary);
+  transition:var(--transition);margin-left:4px;vertical-align:middle;
+  border:1px solid transparent;user-select:none;
+}
+.field-info-btn:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-glow)}
 
 /* Image preview overlay (large) */
 .img-preview-overlay{
@@ -1103,12 +1233,11 @@ textarea.form-input{height:auto;padding:8px 10px;resize:vertical;min-height:54px
         <div class="sidebar-group-title" style="font-size:0.68rem;padding:4px 16px 2px">联运</div>
         <a class="sidebar-item active" href="#" onclick="switchPage('referral-config');return false">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
-          联运应用配置
-          <span class="badge-menu" id="menuCount">0</span>
+          应用引流配置
         </a>
         <a class="sidebar-item" href="#" onclick="switchPage('user-data');return false">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
-          联运用户数据
+          应用引流用户数据
         </a>
       </div>
     </div>
@@ -1133,7 +1262,7 @@ textarea.form-input{height:auto;padding:8px 10px;resize:vertical;min-height:54px
   <header class="app-header">
     <div class="header-breadcrumb">
       推广 <span class="sep">·</span> 联运 <span class="sep">·</span>
-      <span class="current" id="breadcrumbCurrent">联运应用配置</span>
+      <span class="current" id="breadcrumbCurrent">应用引流配置</span>
     </div>
     <div class="header-actions">
       <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="切换主题">
@@ -1152,39 +1281,78 @@ textarea.form-input{height:auto;padding:8px 10px;resize:vertical;min-height:54px
     <!-- Toolbar -->
     <div class="toolbar">
       <div class="toolbar-left">
-        <select class="filter-select" id="filterApp" onchange="filterTable()">
-          <option value="">应用（全部）</option>
-          <option value="23001">23001 - 升级移动版</option>
-          <option value="23003">23003 - 升级移动版</option>
-          <option value="23004">23004 - 升级 mpc 版</option>
-          <option value="23006">23006 - 升级小游戏版</option>
-          <option value="23052">23052 - 升级移动内嵌包</option>
+        <!-- Searchable 应用 combo -->
+        <div class="filter-combo" id="filterAppCombo" data-fh onmouseenter="showFilterHint(event,'app')" onmouseleave="hideFilterHint(event,'app')">
+          <input type="text" id="filterAppInput" placeholder="应用" autocomplete="off" onfocus="openAppCombo()" oninput="filterAppCombo()" onblur="setTimeout(()=>closeAppCombo(),180)">
+          <span class="combo-clear" onclick="clearAppCombo()">✕</span>
+          <input type="hidden" id="filterApp" value="">
+          <div class="combo-dropdown" id="filterAppDropdown"></div>
+        </div>
+        <input type="text" class="filter-input" id="filterTarget" placeholder="引流应用ID" oninput="filterTable()" data-fh onmouseenter="showFilterHint(event,'target')" onmouseleave="hideFilterHint(event,'target')" style="width:150px;height:34px;font-size:0.85rem;padding:0 10px;border:1px solid var(--border-color);border-radius:var(--radius-md);background:var(--bg-input);color:var(--text-primary);outline:none" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border-color)'">
+        <input type="text" class="filter-input" id="filterName" placeholder="引流应用名称" oninput="filterTable()" data-fh onmouseenter="showFilterHint(event,'name')" onmouseleave="hideFilterHint(event,'name')" style="width:150px;height:34px;font-size:0.85rem;padding:0 10px;border:1px solid var(--border-color);border-radius:var(--radius-md);background:var(--bg-input);color:var(--text-primary);outline:none" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border-color)'">
+        <select class="filter-select" id="filterStatus" onchange="filterTable()" data-fh onmouseenter="showFilterHint(event,'status')" onmouseleave="hideFilterHint(event,'status')">
+          <option value="">状态</option>
+          <option value="0">[0] 下架</option>
+          <option value="1">[1] 上架</option>
+          <option value="2">[2] 计划归档</option>
+          <option value="3">[3] 归档中</option>
+          <option value="4">[4] 已归档</option>
+          <option value="5">[5] 归档失败</option>
         </select>
-        <input type="text" class="filter-input" id="filterTarget" placeholder="目标应用AppID" oninput="filterTable()" style="width:170px;height:34px;font-size:0.85rem;padding:0 10px;border:1px solid var(--border-color);border-radius:var(--radius-md);background:var(--bg-input);color:var(--text-primary);outline:none" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border-color)'">
-        <select class="filter-select" id="filterStatus" onchange="filterTable()">
-          <option value="">状态（全部）</option>
-          <option value="0">[0] 禁用</option>
-          <option value="1">[1] 启用</option>
-        </select>
+        <!-- Searchable 渠道 combo -->
+        <div class="filter-combo" id="filterChannelCombo" data-fh onmouseenter="showFilterHint(event,'channel')" onmouseleave="hideFilterHint(event,'channel')">
+          <input type="text" id="filterChannelInput" placeholder="渠道" autocomplete="off" onfocus="openChannelCombo()" oninput="filterChannelCombo()" onblur="setTimeout(()=>closeChannelCombo(),180)">
+          <span class="combo-clear" onclick="clearChannelCombo()">✕</span>
+          <input type="hidden" id="filterChannel" value="">
+          <div class="combo-dropdown" id="filterChannelDropdown"></div>
+        </div>
+        <div class="daterange-wrap" style="position:relative;display:inline-flex;align-items:center">
+          <input type="text" class="form-input" id="filterDateRange" placeholder="创建开始时间~创建结束时间" readonly style="width:300px;height:34px;font-size:0.82rem;cursor:pointer;border:1px solid var(--border-color);border-radius:var(--radius-md);background:var(--bg-input);color:var(--text-primary);padding:0 10px" onclick="openFilterDateRangePopup()" data-fh onmouseenter="showFilterHint(event,'daterange')" onmouseleave="hideFilterHint(event,'daterange')">
+          <button class="daterange-clear" onclick="clearFilterDateRange();event.stopPropagation()" title="清除时间范围" style="position:absolute;right:4px;background:transparent;border:none;color:var(--text-tertiary);cursor:pointer;font-size:0.7rem">✕</button>
+          <input type="hidden" id="filterTimeStart" value="">
+          <input type="hidden" id="filterTimeEnd" value="">
+          <div class="daterange-popup" id="filterDateRangePopup">
+            <div class="daterange-header">选择创建时间区间</div>
+            <div class="daterange-presets">
+              <span onclick="setFilterDateRangePreset('today')">今天</span>
+              <span onclick="setFilterDateRangePreset('thisWeek')">本周</span>
+              <span onclick="setFilterDateRangePreset('thisMonth')">本月</span>
+              <span onclick="setFilterDateRangePreset('last7')">近7天</span>
+              <span onclick="setFilterDateRangePreset('last30')">近30天</span>
+            </div>
+            <div class="daterange-inputs">
+              <label>开始</label>
+              <input type="datetime-local" id="filterDrpStart" step="1">
+              <label>结束</label>
+              <input type="datetime-local" id="filterDrpEnd" step="1">
+            </div>
+            <div class="daterange-footer">
+              <button class="btn btn-ghost btn-sm" onclick="clearFilterDateRange()">清除</button>
+              <button class="btn btn-primary btn-sm" onclick="confirmFilterDateRange()">确定</button>
+            </div>
+          </div>
+        </div>
         <button class="btn btn-primary" onclick="filterTable()">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
           查询
         </button>
         <button class="btn btn-primary" onclick="openAddModal()">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-          创建配置
+          创建
         </button>
+        <!-- Batch dropdown -->
+        <div class="batch-dropdown-wrap" id="batchDropdownWrap" style="position:relative">
+          <button class="btn btn-primary" onclick="toggleBatchDropdown()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
+            批量操作
+            <span class="batch-dropdown-arrow">▾</span>
+          </button>
+          <div class="batch-dropdown-menu" id="batchDropdownMenu">
+            <div class="batch-dropdown-item" onclick="batchEdit()">批量修改</div>
+            <div class="batch-dropdown-item" onclick="batchCopy()">批量复制</div>
+          </div>
+        </div>
       </div>
-    </div>
-
-    <!-- Batch Bar -->
-    <div class="batch-bar" id="batchBar">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
-      已选择 <strong class="count" id="batchCount">0</strong> 项
-      <button class="btn" onclick="batchEdit()">批量修改</button>
-      <button class="btn" onclick="batchDelete()">批量删除</button>
-      <button class="btn" onclick="batchCopy()">批量复制</button>
-      <button class="btn-close" onclick="clearSelection()">✕</button>
     </div>
 
     <!-- Table Top Bar -->
@@ -1205,7 +1373,7 @@ textarea.form-input{height:auto;padding:8px 10px;resize:vertical;min-height:54px
     </div>
     </div><!-- end page-referral-config -->
 
-    <!-- ===== PAGE: 联运用户数据 ===== -->
+    <!-- ===== PAGE: 应用引流用户数据 ===== -->
     <div id="page-user-data" class="page-content">
       <!-- Tab bar -->
       <div class="tab-bar">
@@ -1302,7 +1470,7 @@ textarea.form-input{height:auto;padding:8px 10px;resize:vertical;min-height:54px
 <div class="modal-overlay" id="formModal">
   <div class="modal">
     <div class="modal-header">
-      <h2 id="formModalTitle">新建配置</h2>
+      <h2 id="formModalTitle">创建</h2>
       <button class="modal-close-btn" onclick="closeModal('formModal')">✕</button>
     </div>
     <div class="modal-body">
@@ -1311,34 +1479,37 @@ textarea.form-input{height:auto;padding:8px 10px;resize:vertical;min-height:54px
         <div class="form-grid">
           <div class="form-section-title">基本信息</div>
           <div class="form-group">
-            <label class="form-label">应用 (APP_ID) <span class="required">*</span></label>
-            <select class="form-input form-select" id="f_app_id" required data-hint="N2 APP_ID · int unsigned · 必填"></select>
+            <label class="form-label">应用 <span class="field-info-btn" onclick="event.stopPropagation();showFieldInfo('N2')">ⓘ</span> <span class="required">*</span></label>
+            <select class="form-input form-select" id="f_app_id" required data-hint="N2 APP_ID · int unsigned · 必填\n应用关联：关联应用表主键\n组件：select 下拉"></select>
+            <span class="field-error" id="err_app_id">请选择应用</span>
           </div>
           <div class="form-group">
-            <label class="form-label">排序 (SORT)</label>
-            <input type="number" class="form-input" id="f_sort" placeholder="0（数字越大越靠前）" value="0" data-hint="N17 SORT · int · 默认NULL · 非必填">
+            <label class="form-label">排序 <span class="field-info-btn" onclick="event.stopPropagation();showFieldInfo('N17')">ⓘ</span></label>
+            <input type="number" class="form-input" id="f_sort" placeholder="0（数字越大越靠前）" value="0" data-hint="N17 SORT · int · 默认NULL · 非必填\n排序说明：数字越大越靠前\n组件：input 数字">
           </div>
           <div class="form-group">
-            <label class="form-label">目标活动 / 任务 ID (TARGET_ID) <span class="required">*</span></label>
-            <input type="text" class="form-input" id="f_target_app_id" placeholder="请输入目标活动/任务ID" data-hint="N3 TARGET_ID · varchar(64) · 必填">
+            <label class="form-label">引流应用ID <span class="field-info-btn" onclick="event.stopPropagation();showFieldInfo('N3')">ⓘ</span> <span class="required">*</span></label>
+            <input type="text" class="form-input" id="f_target_app_id" placeholder="请输入引流应用ID" data-hint="N3 TARGET_ID · varchar(64) · 必填\n业务含义：引流应用的唯一标识\n组件：input 文本框">
+            <span class="field-error" id="err_target_app_id">请填写引流应用ID</span>
           </div>
           <div class="form-group">
-            <label class="form-label">目标活动 / 任务名称 (TARGET_NAME) <span class="required">*</span></label>
-            <input type="text" class="form-input" id="f_target_app_name" placeholder="请输入目标活动/任务名称" data-hint="N4 TARGET_NAME · varchar(30) · 必填">
+            <label class="form-label">引流应用名称 <span class="field-info-btn" onclick="event.stopPropagation();showFieldInfo('N4')">ⓘ</span> <span class="required">*</span></label>
+            <input type="text" class="form-input" id="f_target_app_name" placeholder="请输入引流应用名称" data-hint="N4 TARGET_NAME · varchar(30) · 必填\n业务含义：引流应用的展示名称\n组件：input 文本框">
+            <span class="field-error" id="err_target_app_name">请填写引流应用名称</span>
           </div>
           <div class="form-group">
-            <label class="form-label">目标活动 / 任务描述 (TARGET_DESC)</label>
-            <input type="text" class="form-input" id="f_target_app_desc" placeholder="最多12个中文" maxlength="36" data-hint="N5 TARGET_DESC · varchar(500) · 默认NULL · 非必填">
+            <label class="form-label">引流应用描述 <span class="field-info-btn" onclick="event.stopPropagation();showFieldInfo('N5')">ⓘ</span></label>
+            <input type="text" class="form-input" id="f_target_app_desc" placeholder="请输入引流应用描述" maxlength="36" data-hint="N5 TARGET_DESC · varchar(500) · 默认NULL · 非必填\n说明：简要描述引流应用内容\n组件：input 文本框">
           </div>
           <div class="form-group">
-            <label class="form-label">跳转路径 / 启动地址 (LAUNCH_PATH)</label>
-            <input type="text" class="form-input" id="f_launch_path" placeholder="请输入跳转路径/启动地址" data-hint="N6 LAUNCH_PATH · varchar(256) · 默认NULL · 为空则不限制页面打开方式">
+            <label class="form-label">启动路径 <span class="field-info-btn" onclick="event.stopPropagation();showFieldInfo('N6')">ⓘ</span></label>
+            <input type="text" class="form-input" id="f_launch_path" placeholder="请输入启动路径" data-hint="N6 LAUNCH_PATH · varchar(256) · 默认NULL · 非必填\n说明：为空则不限制页面的打开方式\n组件：input 文本框">
           </div>
           <div class="form-section-title">奖励配置</div>
           <div class="form-group">
-            <label class="form-label">礼包 (GIVEPKG_ID)</label>
+            <label class="form-label">礼包 <span class="field-info-btn" onclick="event.stopPropagation();showFieldInfo('N10')">ⓘ</span></label>
             <div class="gift-input-group">
-              <input type="text" class="form-input" id="f_gift_display" placeholder="点击右侧配置按钮配置礼包" readonly data-hint="N10 GIVEPKG_ID · bigint unsigned · 默认NULL · 非必填">
+              <input type="text" class="form-input" id="f_gift_display" placeholder="点击右侧配置按钮配置礼包" readonly data-hint="N10 GIVEPKG_ID · bigint unsigned · 默认NULL · 非必填\n说明：关联礼包表，决定发放的道具\n组件：礼包选择器(按钮)">
               <button type="button" class="gift-action-btn gift-config-btn" onclick="openGiftConfigSub()" title="配置礼包内容">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.32 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
               </button>
@@ -1349,12 +1520,12 @@ textarea.form-input{height:auto;padding:8px 10px;resize:vertical;min-height:54px
             <input type="hidden" id="f_givepkg_id" value="0">
           </div>
           <div class="form-group">
-            <label class="form-label">奖励领取次数上限 (REWARD_TIMES_LIMIT)</label>
-            <input type="number" class="form-input" id="f_reward_times" placeholder="0 = 不限" value="0" data-hint="N9 REWARD_TIMES_LIMIT · int unsigned · 默认NULL · 0表示不限制">
+            <label class="form-label">奖励次数上限 <span class="field-info-btn" onclick="event.stopPropagation();showFieldInfo('N9')">ⓘ</span></label>
+            <input type="number" class="form-input" id="f_reward_times" placeholder="0 = 不限" value="0" data-hint="N9 REWARD_TIMES_LIMIT · int unsigned · 默认NULL · 非必填\n说明：0=不限制；正整数=上限次数\n组件：input 数字">
           </div>
           <div class="form-group">
-            <label class="form-label">奖励有效期 / 周期 (REWARD_PERIOD)</label>
-            <select class="form-input form-select" id="f_reward_spec_type" onchange="onRewardSpecChange()" data-hint="N7 REWARD_PERIOD · varchar(30) · 默认NULL · 非必填">
+            <label class="form-label">奖励周期 <span class="field-info-btn" onclick="event.stopPropagation();showFieldInfo('N7')">ⓘ</span></label>
+            <select class="form-input form-select" id="f_reward_spec_type" onchange="onRewardSpecChange()" data-hint="N7 REWARD_PERIOD · varchar(30) · 默认NULL · 非必填\n枚举：@once/@daily/@weekly/@monthly/@every\n组件：select 下拉 + 自定义间隔">
               <option value="">无限制</option>
               <option value="@once">@once — 仅可领取一次</option>
               <option value="@daily">@daily — 每个自然日重置</option>
@@ -1377,12 +1548,13 @@ textarea.form-input{height:auto;padding:8px 10px;resize:vertical;min-height:54px
             </div>
           </div>
           <div class="form-group full">
-            <label class="form-label">奖励触发条件 (REWARD_COND)</label>
-            <textarea class="json-editor" id="f_condition" placeholder="请输入奖励触发条件JSON，如：{\"key\":\"value\"}" spellcheck="false" data-hint="N8 REWARD_COND · varchar(200) · 默认NULL · JSON格式，为空则无条件限制"></textarea>
+            <label class="form-label">奖励条件 <span class="field-info-btn" onclick="event.stopPropagation();showFieldInfo('N8')">ⓘ</span></label>
+            <textarea class="json-editor" id="f_condition" placeholder="请输入奖励条件JSON，如：{\"key\":\"value\"}" spellcheck="false" data-hint="N8 REWARD_COND · varchar(200) · 默认NULL · 非必填\n格式：JSON\n说明：为空则无条件触发"></textarea>
+            <span class="link-btn" onclick="event.stopPropagation();openDelayPopup()">快捷配置</span>
           </div>
           <div class="form-section-title">图片资源</div>
           <div class="form-group">
-            <label class="form-label">图标 (ICON_URL)</label>
+            <label class="form-label">图标 <span class="field-info-btn" onclick="event.stopPropagation();showFieldInfo('N15')">ⓘ</span></label>
             <div class="image-upload-area" id="iconUpload" onclick="document.getElementById('iconFileInput').click()">
               <input type="file" id="iconFileInput" accept="image/*" onchange="handleFileUpload(this,'icon')">
               <div id="iconPreviewWrap">
@@ -1392,12 +1564,12 @@ textarea.form-input{height:auto;padding:8px 10px;resize:vertical;min-height:54px
               <input type="hidden" id="f_icon_url" value="">
             </div>
             <div style="display:flex;gap:6px;align-items:center;margin-top:4px">
-              <input type="text" class="form-input" id="f_icon_url_input" placeholder="或输入图片URL" style="flex:1;height:30px;font-size:0.8rem" oninput="document.getElementById('f_icon_url').value=this.value;updateImagePreview('icon')" data-hint="N15 ICON_URL · varchar(256) · 默认NULL · 非必填">
+              <input type="text" class="form-input" id="f_icon_url_input" placeholder="或输入图片URL" style="flex:1;height:30px;font-size:0.8rem" oninput="document.getElementById('f_icon_url').value=this.value;updateImagePreview('icon')" data-hint="N15 ICON_URL · varchar(256) · 默认NULL · 非必填\n组件：图片上传 + 图库选择 + URL输入">
               <button type="button" class="btn btn-ghost btn-sm" onclick="openImageLibrary('icon')">图库</button>
             </div>
           </div>
           <div class="form-group">
-            <label class="form-label">Banner 图 (BANNER_URL)</label>
+            <label class="form-label">Banner 图 <span class="field-info-btn" onclick="event.stopPropagation();showFieldInfo('N13')">ⓘ</span></label>
             <div class="image-upload-area" id="bannerUpload" onclick="document.getElementById('bannerFileInput').click()">
               <input type="file" id="bannerFileInput" accept="image/*" onchange="handleFileUpload(this,'banner')">
               <div id="bannerPreviewWrap">
@@ -1407,12 +1579,12 @@ textarea.form-input{height:auto;padding:8px 10px;resize:vertical;min-height:54px
               <input type="hidden" id="f_banner_url" value="">
             </div>
             <div style="display:flex;gap:6px;align-items:center;margin-top:4px">
-              <input type="text" class="form-input" id="f_banner_url_input" placeholder="或输入图片URL" style="flex:1;height:30px;font-size:0.8rem" oninput="document.getElementById('f_banner_url').value=this.value;updateImagePreview('banner')" data-hint="N13 BANNER_URL · varchar(256) · 默认NULL · 非必填">
+              <input type="text" class="form-input" id="f_banner_url_input" placeholder="或输入图片URL" style="flex:1;height:30px;font-size:0.8rem" oninput="document.getElementById('f_banner_url').value=this.value;updateImagePreview('banner')" data-hint="N13 BANNER_URL · varchar(256) · 默认NULL · 非必填\n组件：图片上传 + 图库选择 + URL输入">
               <button type="button" class="btn btn-ghost btn-sm" onclick="openImageLibrary('banner')">图库</button>
             </div>
           </div>
           <div class="form-group">
-            <label class="form-label">弹窗图 (POPUP_URL)</label>
+            <label class="form-label">弹窗图 <span class="field-info-btn" onclick="event.stopPropagation();showFieldInfo('N14')">ⓘ</span></label>
             <div class="image-upload-area" id="popupUpload" onclick="document.getElementById('popupFileInput').click()">
               <input type="file" id="popupFileInput" accept="image/*" onchange="handleFileUpload(this,'popup')">
               <div id="popupPreviewWrap">
@@ -1422,12 +1594,12 @@ textarea.form-input{height:auto;padding:8px 10px;resize:vertical;min-height:54px
               <input type="hidden" id="f_popup_url" value="">
             </div>
             <div style="display:flex;gap:6px;align-items:center;margin-top:4px">
-              <input type="text" class="form-input" id="f_popup_url_input" placeholder="或输入图片URL" style="flex:1;height:30px;font-size:0.8rem" oninput="document.getElementById('f_popup_url').value=this.value;updateImagePreview('popup')" data-hint="N14 POPUP_URL · varchar(256) · 默认NULL · 非必填">
+              <input type="text" class="form-input" id="f_popup_url_input" placeholder="或输入图片URL" style="flex:1;height:30px;font-size:0.8rem" oninput="document.getElementById('f_popup_url').value=this.value;updateImagePreview('popup')" data-hint="N14 POPUP_URL · varchar(256) · 默认NULL · 非必填\n组件：图片上传 + 图库选择 + URL输入">
               <button type="button" class="btn btn-ghost btn-sm" onclick="openImageLibrary('popup')">图库</button>
             </div>
           </div>
           <div class="form-group">
-            <label class="form-label">推荐位跳转 (RECOMMEND_URL)</label>
+            <label class="form-label">推荐位跳转 <span class="field-info-btn" onclick="event.stopPropagation();showFieldInfo('N16')">ⓘ</span></label>
             <div class="image-upload-area" id="recommendUpload" onclick="document.getElementById('recommendFileInput').click()">
               <input type="file" id="recommendFileInput" accept="image/*" onchange="handleFileUpload(this,'recommend')">
               <div id="recommendPreviewWrap">
@@ -1437,31 +1609,31 @@ textarea.form-input{height:auto;padding:8px 10px;resize:vertical;min-height:54px
               <input type="hidden" id="f_recommend_url" value="">
             </div>
             <div style="display:flex;gap:6px;align-items:center;margin-top:4px">
-              <input type="text" class="form-input" id="f_recommend_url_input" placeholder="或输入图片URL" style="flex:1;height:30px;font-size:0.8rem" oninput="document.getElementById('f_recommend_url').value=this.value;updateImagePreview('recommend')" data-hint="N16 RECOMMEND_URL · varchar(256) · 默认NULL · 非必填">
+              <input type="text" class="form-input" id="f_recommend_url_input" placeholder="或输入图片URL" style="flex:1;height:30px;font-size:0.8rem" oninput="document.getElementById('f_recommend_url').value=this.value;updateImagePreview('recommend')" data-hint="N16 RECOMMEND_URL · varchar(256) · 默认NULL · 非必填\n组件：图片上传 + 图库选择 + URL输入">
               <button type="button" class="btn btn-ghost btn-sm" onclick="openImageLibrary('recommend')">图库</button>
             </div>
           </div>
           <div class="form-section-title">展示配置</div>
           <div class="form-group">
-            <label class="form-label">应用渠道标识 (APP_CHANNEL)</label>
-            <select class="form-input form-select" id="f_app_channel_name" data-hint="N11 APP_CHANNEL · varchar(32) · 默认NULL · 非必填">
-              <option value="">不限制</option>
+            <label class="form-label">应用渠道 <span class="field-info-btn" onclick="event.stopPropagation();showFieldInfo('N11')">ⓘ</span> <span class="required">*</span></label>
+            <select class="form-input form-select" id="f_app_channel_name" data-hint="N11 APP_CHANNEL · varchar(32) · 必填\n说明：从channelList枚举中选择\n组件：select 下拉单选">
+              <option value="">请选择渠道</option>
+            </select>
+            <span class="field-error" id="err_app_channel_name">请选择应用渠道</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">系统 <span class="field-info-btn" onclick="event.stopPropagation();showFieldInfo('N12')">ⓘ</span> <span class="required">*</span></label>
+            <select class="form-input form-select" id="f_os" required data-hint="N12 OS · varchar(32) · 默认NULL · 必填\n枚举：All Android iOS\n组件：select 下拉">
+              <option value="all">All</option>
+              <option value="android">Android</option>
+              <option value="ios">iOS</option>
             </select>
           </div>
           <div class="form-group">
-            <label class="form-label">目标操作系统 (OS) <span class="required">*</span></label>
-            <select class="form-input form-select" id="f_os" required data-hint="N12 OS · varchar(32) · 默认NULL · 必填">
-              <option value="0">[0] 全部</option>
-              <option value="1">[1] Android</option>
-              <option value="2">[2] iOS</option>
-              <option value="3">[3] Android+iOS</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">状态 (STATUS) <span class="required">*</span></label>
-            <select class="form-input form-select" id="f_status" data-hint="N18 STATUS · int · 默认'0' · 必填">
-              <option value="0">[0] 禁用</option>
-              <option value="1">[1] 启用</option>
+            <label class="form-label">状态 <span class="field-info-btn" onclick="event.stopPropagation();showFieldInfo('N18')">ⓘ</span> <span class="required">*</span></label>
+            <select class="form-input form-select" id="f_status" data-hint="N18 STATUS · int · 默认0 · 必填\n枚举：0=下架 1=上架\n组件：select 下拉">
+              <option value="0">[0] 下架</option>
+              <option value="1">[1] 上架</option>
             </select>
           </div>
         </div>
@@ -1473,6 +1645,25 @@ textarea.form-input{height:auto;padding:8px 10px;resize:vertical;min-height:54px
     </div>
   </div>
 </div>
+
+<!-- ===== DELAY POPUP ===== -->
+<div class="delay-popup-overlay" id="delayPopupOverlay" onclick="closeDelayPopup()">
+  <div class="delay-popup" onclick="event.stopPropagation()">
+    <h3>延迟配置</h3>
+    <label>延迟时间</label>
+    <div class="delay-input-row">
+      <input type="number" id="delayValue" placeholder="1000" min="0" step="1">
+      <span class="delay-unit">毫秒 (ms)</span>
+    </div>
+    <div class="delay-btns">
+      <button class="btn-cancel" onclick="closeDelayPopup()">取消</button>
+      <button class="btn-confirm" onclick="confirmDelay()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== FIELD INFO POPOVER ===== -->
+<div class="field-info-popover" id="fieldInfoPopover"></div>
 
 <!-- ===== MODAL: Detail (readonly) ===== -->
 <div class="modal-overlay" id="detailModal">
@@ -1598,10 +1789,9 @@ textarea.form-input{height:auto;padding:8px 10px;resize:vertical;min-height:54px
       支持系统
     </label>
     <select class="form-input form-select" id="be_os" disabled>
-      <option value="0">[0] 全部</option>
-      <option value="1">[1] Android</option>
-      <option value="2">[2] iOS</option>
-      <option value="3">[3] Android+iOS</option>
+      <option value="all">All</option>
+      <option value="android">Android</option>
+      <option value="ios">iOS</option>
     </select>
   </div>
   <div class="form-group batch-full" data-be="condition">
@@ -1764,6 +1954,10 @@ textarea.form-input{height:auto;padding:8px 10px;resize:vertical;min-height:54px
 
 <!-- ===== Toast ===== -->
 <div class="toast" id="toast"></div>
+<!-- Column resize overlay -->
+<div class="col-resize-overlay" id="colResizeOverlay"></div>
+<!-- Filter hint popup -->
+<div class="filter-hint-popup" id="filterHintPopup"></div>
 
 <script>
 // =====================================================================
@@ -1791,22 +1985,22 @@ let imageLibrary = [
 let columnConfig = [
   { key:'check', label:'',    visible:true,  width:36  },
   { key:'id',     label:'编号',   visible:true,  width:60  },
-  { key:'app',    label:'应用',   visible:true,  width:180 },
-  { key:'target', label:'目标活动名称',  visible:true,  width:200 },
-  { key:'desc',   label:'目标活动描述',   visible:true,  width:150 },
-  { key:'gift',   label:'礼包',   visible:true,  width:160 },
-  { key:'icon',   label:'图标',   visible:true,  width:60  },
-  { key:'banner', label:'Banner 图',  visible:true,  width:60  },
-  { key:'popup',  label:'弹窗图',  visible:true,  width:60  },
-  { key:'recommend',label:'推荐位跳转', visible:true,  width:60  },
-  { key:'reward_spec', label:'奖励有效期/周期', visible:false, width:90  },
-  { key:'reward_times',label:'奖励领取次数上限', visible:false, width:70  },
-  { key:'sort',   label:'排序',   visible:true,  width:60  },
-  { key:'status', label:'状态',   visible:true,  width:70  },
-  { key:'os',     label:'目标操作系统',   visible:false, width:80  },
-  { key:'channel',label:'应用渠道标识',   visible:false, width:80  },
-  { key:'time',   label:'创建时间', visible:true,  width:140 },
-  { key:'action', label:'操作',   visible:true,  width:190 },
+  { key:'app',    label:'应用',   visible:true,  width:120 },
+  { key:'target', label:'引流应用',  visible:true,  width:140 },
+  { key:'desc',   label:'引流应用描述',   visible:true,  width:120 },
+  { key:'gift',   label:'礼包',   visible:true,  width:100 },
+  { key:'icon',   label:'图标',   visible:true,  width:50  },
+  { key:'banner', label:'Banner',  visible:true,  width:50  },
+  { key:'popup',  label:'弹窗图',  visible:true,  width:50  },
+  { key:'recommend',label:'推荐位', visible:true,  width:50  },
+  { key:'reward_spec', label:'奖励周期', visible:false, width:80  },
+  { key:'reward_times',label:'奖励次数', visible:false, width:60  },
+  { key:'sort',   label:'排序',   visible:true,  width:50  },
+  { key:'status', label:'状态',   visible:true,  width:60  },
+  { key:'os',     label:'系统',   visible:false, width:60  },
+  { key:'channel',label:'应用渠道',   visible:false, width:70  },
+  { key:'time',   label:'创建时间', visible:true,  width:130 },
+  { key:'action', label:'操作',   visible:true,  width:130 },
 ];
 
 // =====================================================================
@@ -1855,7 +2049,7 @@ function populateAppDropdown(){
 }
 function populateChannelDropdown(){
   const sel = document.getElementById('f_app_channel_name');
-  sel.innerHTML = '<option value="">不限制</option>' + channelList.map(c => `<option value="${c.name}">[${c.id}] ${c.name}</option>`).join('');
+  sel.innerHTML = '<option value="">请选择渠道</option>' + channelList.map(c => `<option value="${c.name}">[${c.id}] ${c.name}</option>`).join('');
 }
 // ========== REWARD SPEC ==========
 function onRewardSpecChange(){
@@ -1922,6 +2116,56 @@ function initData(){
 let sortField = null;
 let sortAsc = true;
 
+// Column resize
+const columnWidths = {};
+let resizeColKey = null;
+let resizeStartX = 0;
+let resizeStartW = 0;
+
+function startColResize(e, colKey){
+  e.stopPropagation();
+  e.preventDefault();
+  resizeColKey = colKey;
+  const th = document.querySelector(`th[data-col-key="${colKey}"]`);
+  resizeStartW = th ? th.offsetWidth : 150;
+  resizeStartX = e.clientX;
+  const overlay = document.getElementById('colResizeOverlay');
+  overlay.classList.add('active');
+  document.addEventListener('mousemove', onColResizeMove);
+  document.addEventListener('mouseup', onColResizeEnd);
+  const handle = th ? th.querySelector('.col-resize-handle') : null;
+  if(handle) handle.classList.add('active');
+}
+function onColResizeMove(e){
+  if(!resizeColKey) return;
+  const delta = e.clientX - resizeStartX;
+  const newW = Math.max(50, resizeStartW + delta);
+  const th = document.querySelector(`th[data-col-key="${resizeColKey}"]`);
+  if(th){ th.style.width = newW + 'px'; th.style.minWidth = newW + 'px'; }
+  const tds = document.querySelectorAll(`#mainTable td:nth-child(n)`);
+  // Match td column index
+  const colIdx = Array.from(th.parentElement.children).indexOf(th);
+  document.querySelectorAll('#mainTable tbody tr').forEach(row => {
+    const td = row.children[colIdx];
+    if(td){ td.style.width = newW + 'px'; td.style.minWidth = newW + 'px'; }
+  });
+}
+function onColResizeEnd(e){
+  const th = document.querySelector(`th[data-col-key="${resizeColKey}"]`);
+  if(th){
+    const w = parseInt(th.style.width) || th.offsetWidth;
+    columnWidths[resizeColKey] = w;
+    const col = columnConfig.find(c => c.key === resizeColKey);
+    if(col) col.width = w;
+  }
+  const handle = th ? th.querySelector('.col-resize-handle') : null;
+  if(handle) handle.classList.remove('active');
+  document.getElementById('colResizeOverlay').classList.remove('active');
+  document.removeEventListener('mousemove', onColResizeMove);
+  document.removeEventListener('mouseup', onColResizeEnd);
+  resizeColKey = null;
+}
+
 function sortBy(field){
   if(sortField === field) sortAsc = !sortAsc;
   else { sortField = field; sortAsc = true; }
@@ -1942,16 +2186,25 @@ function sortBy(field){
 function renderTable(){
   const appF = document.getElementById('filterApp').value;
   const targetF = document.getElementById('filterTarget').value;
+  const nameF = document.getElementById('filterName').value.toLowerCase();
   const statusF = document.getElementById('filterStatus').value;
 
   let filtered = referralData.filter(r => {
     if(appF && r.app_id !== parseInt(appF)) return false;
-    if(targetF && !String(r.target_app_id).includes(targetF)) return false;
+    if(targetF && String(r.target_app_id) !== targetF) return false;
+    if(nameF && !String(r.target_app_name||'').toLowerCase().includes(nameF)) return false;
     if(statusF!=='' && r.status!==parseInt(statusF)) return false;
+    // Channel filter
+    const channelF = document.getElementById('filterChannel').value;
+    if(channelF && r.app_channel_name !== channelF) return false;
+    // Date range filter
+    const tStart = document.getElementById('filterTimeStart').value;
+    const tEnd = document.getElementById('filterTimeEnd').value;
+    if(tStart && r.create_time && r.create_time < tStart.replace('T',' ')) return false;
+    if(tEnd && r.create_time && r.create_time > tEnd.replace('T',' ')) return false;
     return true;
   });
 
-  document.getElementById('menuCount').textContent = referralData.length;
   document.getElementById('totalRows').textContent = filtered.length;
   document.getElementById('showStart').textContent = filtered.length ? 1 : 0;
   document.getElementById('showEnd').textContent = filtered.length;
@@ -1968,7 +2221,8 @@ function renderTable(){
     const arrow = (isTime && sortField === 'create_time') ? `<span class="sort-arrow active">${sortAsc ? '▲' : '▼'}</span>` :
                   (isSort && sortField === 'sort') ? `<span class="sort-arrow active">${sortAsc ? '▲' : '▼'}</span>` :
                   (isSort || isTime) ? '<span class="sort-arrow">▲</span>' : '';
-    return `<th${sortClass} style="width:${c.width||'auto'}px;min-width:${c.width||'auto'}px"${sortableAttr}>${renderColLabel(c)}${arrow}</th>`;
+    const colWidth = columnWidths[c.key] || c.width;
+    return `<th${sortClass} style="width:${colWidth||'auto'}px;min-width:${colWidth||'auto'}px"${sortableAttr} data-col-key="${c.key}">${renderColLabel(c)}${arrow}<span class="col-resize-handle" onmousedown="startColResize(event,'${c.key}')"></span></th>`;
   }).join('') + '</tr>';
 
   // Render body
@@ -1979,12 +2233,12 @@ function renderTable(){
   }
 
   tbody.innerHTML = filtered.map(r => {
-    const osLabel = ['全部','Android','iOS','Android+iOS'][r.os] || '全部';
-    const statusMap = {0:'禁用',1:'启用',2:'计划归档',3:'归档中',4:'已归档',5:'归档失败'};
+    const osLabel = {all:'All',android:'Android',ios:'iOS'}[r.os] || 'All';
+    const statusMap = {0:'下架',1:'上架',2:'计划归档',3:'归档中',4:'已归档',5:'归档失败'};
+    const statusBadgeMap = {0:'inactive',1:'active',2:'planned',3:'archiving',4:'archived',5:'failed'};
     const statusLabel = statusMap[r.status] || '未知';
-    const statusBadgeClass = r.status===0 ? 'badge badge-inactive' : r.status===1 ? 'badge badge-active' : 'badge badge-archived';
-    const statusDotClass = r.status===0 ? 'inactive' : r.status===1 ? 'active' : 'archived';
-    const statusHtml = `<span class="${statusBadgeClass}"><span class="badge-dot ${statusDotClass}"></span>${statusLabel}</span>`;
+    const statusBadgeClass = 'badge badge-' + (statusBadgeMap[r.status] || 'archived');
+    const statusHtml = `<span class="${statusBadgeClass}">${statusLabel}</span>`;
     const rowClass = r.status===0 ? 'class="is-disabled"' : '';
 
     const cells = visibleCols.map(c => {
@@ -2001,7 +2255,7 @@ function renderTable(){
         case 'recommend': return `<td>${r.recommend_url ? `<span class="cell-img-wrap" onclick="showBigImage('${r.recommend_url}')"><img class="cell-img" src="${r.recommend_url}" alt="recommend" onerror="this.style.display='none'"></span>` : '<span style="color:var(--text-tertiary)">—</span>'}</td>`;
         case 'reward_spec': return `<td><span class="cell-spec">${r.reward_spec||'—'}</span></td>`;
         case 'reward_times':return `<td><span class="cell-reward">${r.reward_times>0 ? r.reward_times+'次' : '不限'}</span></td>`;
-        case 'sort':  return `<td><span class="cell-sort" onclick="sortBy('sort')">${r.sort}</span></td>`;
+        case 'sort':  return `<td><span>${r.sort}</span></td>`;
         case 'status':return `<td>${statusHtml}</td>`;
         case 'os':    return `<td><span>${osLabel}</span></td>`;
         case 'channel':return `<td><span>${r.app_channel_name||'—'}</span></td>`;
@@ -2020,10 +2274,6 @@ function renderTable(){
               <button class="action-dropdown-item" onclick="copyReferral(${r.referral_id})">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
                 复制
-              </button>
-              <button class="action-dropdown-item danger" onclick="deleteReferral(${r.referral_id})">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
-                删除
               </button>
             </div>
           </div>
@@ -2045,6 +2295,139 @@ function renderColLabel(c){
   return c.label;
 }
 
+// ========== SEARCHABLE COMBO FILTERS ==========
+function renderAppCombo(filter){
+  const dd = document.getElementById('filterAppDropdown');
+  const items = filter ? appList.filter(a => String(a.id).includes(filter) || a.name.includes(filter)) : appList;
+  if(!items.length){ dd.innerHTML = '<div class="combo-empty">无匹配项</div>'; dd.classList.add('show'); return; }
+  dd.innerHTML = items.map(a => `<div class="combo-option${document.getElementById('filterApp').value===String(a.id)?' selected':''}" data-value="${a.id}" onmousedown="selectAppCombo('${a.id}','[${a.id}] ${a.name}')">[${a.id}] ${a.name}</div>`).join('');
+  dd.classList.add('show');
+}
+function openAppCombo(){ renderAppCombo(document.getElementById('filterAppInput').value); }
+function filterAppCombo(){ renderAppCombo(document.getElementById('filterAppInput').value); }
+function closeAppCombo(){ document.getElementById('filterAppDropdown').classList.remove('show'); }
+function selectAppCombo(id,label){
+  document.getElementById('filterApp').value = id;
+  document.getElementById('filterAppInput').value = label;
+  document.getElementById('filterAppCombo').classList.add('has-value');
+  closeAppCombo();
+  filterTable();
+}
+function clearAppCombo(){
+  document.getElementById('filterApp').value = '';
+  document.getElementById('filterAppInput').value = '';
+  document.getElementById('filterAppCombo').classList.remove('has-value');
+  filterTable();
+}
+
+function renderChannelCombo(filter){
+  const dd = document.getElementById('filterChannelDropdown');
+  const items = filter ? channelList.filter(c => String(c.id).includes(filter) || c.name.includes(filter)) : channelList;
+  if(!items.length){ dd.innerHTML = '<div class="combo-empty">无匹配项</div>'; dd.classList.add('show'); return; }
+  dd.innerHTML = items.map(c => `<div class="combo-option${document.getElementById('filterChannel').value===c.name?' selected':''}" data-value="${c.name}" onmousedown="selectChannelCombo('${c.name}','[${c.id}] ${c.name}')">[${c.id}] ${c.name}</div>`).join('');
+  dd.classList.add('show');
+}
+function openChannelCombo(){ renderChannelCombo(document.getElementById('filterChannelInput').value); }
+function filterChannelCombo(){ renderChannelCombo(document.getElementById('filterChannelInput').value); }
+function closeChannelCombo(){ document.getElementById('filterChannelDropdown').classList.remove('show'); }
+function selectChannelCombo(name,label){
+  document.getElementById('filterChannel').value = name;
+  document.getElementById('filterChannelInput').value = label;
+  document.getElementById('filterChannelCombo').classList.add('has-value');
+  closeChannelCombo();
+  filterTable();
+}
+function clearChannelCombo(){
+  document.getElementById('filterChannel').value = '';
+  document.getElementById('filterChannelInput').value = '';
+  document.getElementById('filterChannelCombo').classList.remove('has-value');
+  filterTable();
+}
+
+// ========== FILTER HINT (click-to-show) ==========
+const filterHintData = {
+  app:{
+    label:'APP_ID', required:'否，默认为空', match:'精确', auth:'不控权',
+    input:'可输入ID或中文名称搜索'
+  },
+  target:{
+    label:'TARGET_ID', required:'否，默认为空', match:'精确', auth:'不控权',
+    input:'只能输入数字'
+  },
+  name:{
+    label:'TARGET_NAME', required:'非必填，默认为空', match:'模糊', auth:'不控权',
+    input:'输入应用引流名称模糊搜索'
+  },
+  status:{
+    label:'STATUS', required:'否，默认为空', match:'精确', auth:'不控权',
+    input:'只能下拉单选'
+  },
+  channel:{
+    label:'APP_CHANNEL', required:'否，默认为空', match:'精确', auth:'不控权',
+    input:'只能下拉单选'
+  },
+  daterange:{
+    label:'CREATE_TIME', required:'否，默认为空', match:'模糊，区间选择', auth:'不控权',
+    input:'可选择时间区间，只能在区间中才展示'
+  }
+};
+let hintHideTimer = null;
+let hintHoverOnPopup = false;
+function showFilterHint(e, hintId){
+  e.stopPropagation();
+  const d = filterHintData[hintId];
+  if(!d) return;
+  clearTimeout(hintHideTimer);
+  const pop = document.getElementById('filterHintPopup');
+  pop.innerHTML = '<div class="fh-title">说明：</div>' +
+    '<div class="fh-row">1、<b>字段：</b>' + d.label + '</div>' +
+    '<div class="fh-row">2、<b>是否必填：</b>' + d.required + '</div>' +
+    '<div class="fh-row">3、<b>精确/模糊：</b>' + d.match + '</div>' +
+    '<div class="fh-row">4、<b>控权：</b>' + d.auth + '</div>' +
+    '<div class="fh-row">5、<b>输入：</b>' + d.input + '</div>';
+  const rect = e.currentTarget.getBoundingClientRect();
+  let left = rect.right + 8;
+  let top = rect.top - 10;
+  if(left + 280 > window.innerWidth) left = rect.left - 268;
+  if(left < 8) left = 8;
+  if(top < 8) top = 8;
+  pop.style.left = left + 'px';
+  pop.style.top = top + 'px';
+  pop._hintId = hintId;
+  pop.classList.add('show');
+}
+function hideFilterHint(e, hintId){
+  // Delay hide to allow mouse to reach the popup
+  hintHideTimer = setTimeout(function(){
+    if(!hintHoverOnPopup){
+      const pop = document.getElementById('filterHintPopup');
+      pop.classList.remove('show');
+    }
+  }, 200);
+}
+// Keep popup open when hovering over it
+document.addEventListener('mouseenter', function(e){
+  const pop = document.getElementById('filterHintPopup');
+  if(pop.contains(e.target)){
+    hintHoverOnPopup = true;
+    clearTimeout(hintHideTimer);
+  }
+}, true);
+document.addEventListener('mouseleave', function(e){
+  const pop = document.getElementById('filterHintPopup');
+  if(pop.contains(e.target)){
+    hintHoverOnPopup = false;
+    pop.classList.remove('show');
+  }
+}, true);
+// Close filter hint on click anywhere outside
+document.addEventListener('click', function(e){
+  const pop = document.getElementById('filterHintPopup');
+  if(pop.classList.contains('show') && !pop.contains(e.target) && !e.target.closest('[data-fh]')){
+    pop.classList.remove('show');
+  }
+});
+
 function filterTable(){ renderTable(); }
 
 // ========== SELECT ALL ==========
@@ -2054,17 +2437,41 @@ function toggleSelectAll(){
   updateBatchBar();
 }
 function updateBatchBar(){
-  const checked = document.querySelectorAll('.row-checkbox:checked').length;
-  document.getElementById('batchCount').textContent = checked;
-  const bar = document.getElementById('batchBar');
-  if(checked>0){ bar.classList.add('active'); } else { bar.classList.remove('active'); document.getElementById('selectAll').checked = false; }
+  // Simplified: batch dropdown always visible; no batch bar
 }
+function toggleBatchDropdown(){
+  const menu = document.getElementById('batchDropdownMenu');
+  menu.classList.toggle('show');
+}
+// Close batch dropdown on outside click
+document.addEventListener('click', function(e){
+  const menu = document.getElementById('batchDropdownMenu');
+  const wrap = document.getElementById('batchDropdownWrap');
+  if(menu && wrap && menu.classList.contains('show') && !wrap.contains(e.target)){
+    menu.classList.remove('show');
+  }
+});
 function getSelectedIds(){ return Array.from(document.querySelectorAll('.row-checkbox:checked')).map(cb => parseInt(cb.value)); }
 function clearSelection(){ document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = false); document.getElementById('selectAll').checked = false; updateBatchBar(); }
 
 // ========== MODAL HELPERS ==========
 function openModal(id){ document.getElementById(id).classList.add('active'); }
 function closeModal(id){ document.getElementById(id).classList.remove('active'); }
+
+// ========== DELAY POPUP ==========
+function openDelayPopup(){
+  document.getElementById('delayValue').value = '';
+  document.getElementById('delayPopupOverlay').classList.add('show');
+}
+function closeDelayPopup(){
+  document.getElementById('delayPopupOverlay').classList.remove('show');
+}
+function confirmDelay(){
+  const val = parseInt(document.getElementById('delayValue').value) || 1000;
+  if(val < 0) return;
+  document.getElementById('f_condition').value = JSON.stringify({delay: val});
+  closeDelayPopup();
+}
 function showToast(msg, type='success'){
   const t = document.getElementById('toast');
   t.textContent = msg; t.className = 'toast ' + type + ' show';
@@ -2080,7 +2487,7 @@ function showBigImage(url){
 
 // ========== ADD / EDIT ==========
 function openAddModal(){
-  document.getElementById('formModalTitle').textContent = '新建配置';
+  document.getElementById('formModalTitle').textContent = '创建';
   document.getElementById('editId').value = '';
   populateAppDropdown();
   populateChannelDropdown();
@@ -2103,7 +2510,7 @@ function openAddModal(){
 function editReferral(id){
   const r = referralData.find(d => d.referral_id === id);
   if(!r) return;
-  document.getElementById('formModalTitle').textContent = '编辑配置 #' + id;
+  document.getElementById('formModalTitle').textContent = '编辑 #' + id;
   document.getElementById('editId').value = id;
   populateAppDropdown();
   populateChannelDropdown();
@@ -2128,6 +2535,54 @@ function editReferral(id){
   openModal('formModal');
 }
 
+// ========== FIELD DOCUMENTATION ==========
+const fieldDoc = {
+  N2:{name:'APP_ID',label:'应用',type:'int unsigned',def:'—',required:'\u2705',note:'关联应用表主键',component:'select 下拉',rule:'必填，创建/编辑时从下拉列表中选择'},
+  N3:{name:'TARGET_ID',label:'引流应用ID',type:'varchar(64)',def:'—',required:'\u2705',note:'引流应用的唯一标识',component:'input 文本框',rule:'必填，前端校验非空'},
+  N4:{name:'TARGET_NAME',label:'引流应用名称',type:'varchar(30)',def:'—',required:'\u2705',note:'引流应用的展示名称',component:'input 文本框',rule:'必填，前端校验非空'},
+  N5:{name:'TARGET_DESC',label:'引流应用描述',type:'varchar(500)',def:'NULL',required:'\u274c',note:'简要描述引流应用内容',component:'input 文本框',rule:'最多12个中文(36字符)，非必填'},
+  N6:{name:'LAUNCH_PATH',label:'启动路径',type:'varchar(256)',def:'NULL',required:'\u274c',note:'点击推荐位后的跳转页面路径',component:'input 文本框',rule:'为空则不限制；填写后仅该路径可访问'},
+  N7:{name:'REWARD_PERIOD',label:'奖励周期',type:'varchar(30)',def:'NULL',required:'\u274c',note:'奖励领取周期控制，如每天/每周/每月',component:'select 下拉 + 自定义间隔',rule:'空=无限制；@once=仅一次；@daily/@weekly/@monthly；@every=自定义'},
+  N8:{name:'REWARD_COND',label:'奖励条件',type:'varchar(200)',def:'NULL',required:'\u274c',note:'JSON格式的条件表达式',component:'textarea 文本域',rule:'JSON格式，为空则无条件限制'},
+  N9:{name:'REWARD_TIMES_LIMIT',label:'奖励次数上限',type:'int unsigned',def:'NULL',required:'\u274c',note:'每个用户可领取的最大次数',component:'input 数字',rule:'0=不限制；正整数为上限次数'},
+  N10:{name:'GIVEPKG_ID',label:'礼包',type:'bigint unsigned',def:'NULL',required:'\u274c',note:'关联礼包表，决定发放的道具内容',component:'礼包选择器(按钮)',rule:'点击配置按钮弹窗选择礼包，非必填'},
+  N11:{name:'APP_CHANNEL',label:'应用渠道',type:'varchar(32)',def:'',required:'\u2705',note:'限定展示的应用渠道',component:'select 下拉单选',rule:'必填：从channelList枚举中选择'},
+  N12:{name:'OS',label:'系统',type:'varchar(32)',def:'NULL',required:'\u2705',note:'目标操作系统类型',component:'select 下拉',rule:'必填：All Android iOS'},
+  N13:{name:'BANNER_URL',label:'Banner图',type:'varchar(256)',def:'NULL',required:'\u274c',note:'背景/Banner图片URL',component:'图片上传 + URL输入',rule:'可直接上传或输入URL，非必填'},
+  N14:{name:'POPUP_URL',label:'弹窗图',type:'varchar(256)',def:'NULL',required:'\u274c',note:'弹窗/拍脸图URL',component:'图片上传 + URL输入',rule:'可直接上传或输入URL，非必填'},
+  N15:{name:'ICON_URL',label:'图标',type:'varchar(256)',def:'NULL',required:'\u274c',note:'游戏图标URL',component:'图片上传 + URL输入',rule:'可直接上传或输入URL，非必填'},
+  N16:{name:'RECOMMEND_URL',label:'推荐位跳转',type:'varchar(256)',def:'NULL',required:'\u274c',note:'推荐位的跳转地址图片',component:'图片上传 + URL输入',rule:'可直接上传或输入URL，非必填'},
+  N17:{name:'SORT',label:'排序',type:'int',def:'NULL',required:'\u274c',note:'排序权重，数字越大越靠前',component:'input 数字',rule:'数字越大越靠前，非必填'},
+  N18:{name:'STATUS',label:'状态',type:'int',def:'0',required:'\u2705',note:'控制推荐位展示状态',component:'select 下拉',rule:'必填：0=下架 1=上架'},
+};
+
+let currentFieldInfo = null;
+
+function showFieldInfo(nId){
+  const d = fieldDoc[nId];
+  if(!d) return;
+  const popover = document.getElementById('fieldInfoPopover');
+  popover.innerHTML = `
+    <div class="fi-title">${nId} （${d.name} · ${d.label}）</div>
+    <div class="fi-row"><span class="fi-label">数据类型</span><span class="fi-value">${d.type}</span></div>
+    <div class="fi-row"><span class="fi-label">默认值</span><span class="fi-value">${d.def}</span></div>
+    <div class="fi-row"><span class="fi-label">是否必填</span><span class="fi-value">${d.required}</span></div>
+    <div class="fi-row"><span class="fi-label">前端组件</span><span class="fi-value">${d.component}</span></div>
+    <div class="fi-row"><span class="fi-label">说明</span><span class="fi-value">${d.note}</span></div>
+    <div class="fi-row"><span class="fi-label">校验规则</span><span class="fi-value">${d.rule}</span></div>
+  `;
+  // Position near the clicked element
+  const rect = event.target.getBoundingClientRect();
+  const w = 340;
+  let left = rect.right + 8;
+  if(left + w > window.innerWidth - 10) left = rect.left - w - 8;
+  if(left < 10) left = 10;
+  popover.style.left = left + 'px';
+  popover.style.top = Math.max(10, rect.top - 10) + 'px';
+  popover.classList.add('show');
+  currentFieldInfo = nId;
+}
+
 function saveReferral(){
   const editId = document.getElementById('editId').value;
   const data = {
@@ -2143,7 +2598,7 @@ function saveReferral(){
     reward_times: parseInt(document.getElementById('f_reward_times').value) || 0,
     app_channel_name: document.getElementById('f_app_channel_name').value.trim(),
     status: parseInt(document.getElementById('f_status').value),
-    os: parseInt(document.getElementById('f_os').value) || 0,
+    os: document.getElementById('f_os').value.trim(),
     condition: document.getElementById('f_condition').value.trim() || '{}',
     icon_url: document.getElementById('f_icon_url').value,
     banner_url: document.getElementById('f_banner_url').value,
@@ -2151,9 +2606,22 @@ function saveReferral(){
     recommend_url: document.getElementById('f_recommend_url').value,
     sort: parseInt(document.getElementById('f_sort').value) || 0,
   };
-  if(!data.target_app_id){ showToast('请填写目标活动ID', 'error'); return; }
-  if(!data.target_app_name){ showToast('请填写目标活动名称', 'error'); return; }
-  if(!data.app_id){ showToast('请选择应用', 'error'); return; }
+  // Clear previous inline errors
+  document.querySelectorAll('.field-error').forEach(el => el.classList.remove('show'));
+  document.querySelectorAll('.form-input.error,.filter-combo.error').forEach(el => el.classList.remove('error'));
+  let hasError = false;
+  function showFieldError(fieldId, errId){
+    const el = document.getElementById(fieldId);
+    const err = document.getElementById(errId);
+    if(el) el.classList.add('error');
+    if(err) err.classList.add('show');
+    hasError = true;
+  }
+  if(!data.target_app_id){ showFieldError('f_target_app_id','err_target_app_id'); }
+  if(!data.target_app_name){ showFieldError('f_target_app_name','err_target_app_name'); }
+  if(!data.app_id){ showFieldError('f_app_id','err_app_id'); }
+  if(!data.app_channel_name){ showFieldError('f_app_channel_name','err_app_channel_name'); }
+  if(hasError) return;
   const now = new Date().toISOString().replace('T',' ').slice(0,19);
   if(editId){
     const idx = referralData.findIndex(d => d.referral_id === parseInt(editId));
@@ -2221,11 +2689,10 @@ function showDetail(id){
   const r = referralData.find(d => d.referral_id === id);
   if(!r) return;
   document.getElementById('detailModalTitle').textContent = '配置详情 #' + id;
-  const osLabel = ['全部','Android','iOS','Android+iOS'][r.os] || '全部';
-  const statusMap = {0:'禁用',1:'启用',2:'计划归档',3:'归档中',4:'已归档',5:'归档失败'};
+  const osLabel = {all:'All',android:'Android',ios:'iOS'}[r.os] || 'All';
+  const statusMap = {0:'下架',1:'上架',2:'计划归档',3:'归档中',4:'已归档',5:'归档失败'};
   const statusLabel = statusMap[r.status] || '未知';
   const statusBadgeClass = r.status===0 ? 'badge badge-inactive' : r.status===1 ? 'badge badge-active' : 'badge badge-archived';
-  const statusDotClass = r.status===0 ? 'inactive' : r.status===1 ? 'active' : 'archived';
   const imgReadonly = (url, label) => url
     ? `<div class="image-upload-area readonly" style="cursor:default"><div class="image-preview-wrap"><img class="image-preview" src="${url}" onclick="showBigImage('${url}')" title="点击查看大图" style="cursor:pointer"></div></div>`
     : `<div class="image-upload-area readonly" style="cursor:default"><svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg><div class="upload-text">${label}</div></div>`;
@@ -2240,7 +2707,7 @@ function showDetail(id){
     <div class="detail-field"><div class="detail-label">奖励周期</div><div class="detail-value"><span class="cell-spec">${r.reward_spec || '无限制'}</span></div></div>
     <div class="detail-field"><div class="detail-label">限购次数</div><div class="detail-value">${r.reward_times>0 ? r.reward_times+'次' : '不限购'}</div></div>
     <div class="detail-field"><div class="detail-label">条件</div><div class="detail-value">${r.condition || '{}'}</div></div>
-    <div class="detail-field"><div class="detail-label">状态</div><div class="detail-value"><span class="${statusBadgeClass}"><span class="badge-dot ${statusDotClass}"></span>${statusLabel}</span></div></div>
+    <div class="detail-field"><div class="detail-label">状态</div><div class="detail-value"><span class="${statusBadgeClass}">${statusLabel}</span></div></div>
     <div class="detail-field"><div class="detail-label">系统</div><div class="detail-value">${osLabel}</div></div>
     <div class="detail-field"><div class="detail-label">渠道</div><div class="detail-value">${r.app_channel_name || '—'}</div></div>
     <div class="detail-field"><div class="detail-label">排序</div><div class="detail-value">${r.sort}</div></div>
@@ -2462,7 +2929,7 @@ function resetBatchFields(){
   document.getElementById('beEverySubGroup').style.display = 'none';
   // Populate batch channel dropdown
   const chSel = document.getElementById('be_app_channel_name');
-  if(chSel) chSel.innerHTML = '<option value="">不限制</option>' + channelList.map(c => `<option value="${c.name}">[${c.id}] ${c.name}</option>`).join('');
+  if(chSel) chSel.innerHTML = '<option value="">请选择渠道</option>' + channelList.map(c => `<option value="${c.name}">[${c.id}] ${c.name}</option>`).join('');
 }
 
 function beOnRewardSpecChange(){
@@ -2513,7 +2980,7 @@ function confirmBatchEdit(){
   if(chk('be_reward_spec')){ const rs = document.getElementById('be_reward_spec').value; if(rs) u.reward_spec = rs; else u.reward_spec = ''; }
   if(chk('be_reward_times')){ const t = parseInt(v('be_reward_times')); u.reward_times = isNaN(t) ? 0 : t; }
   if(chk('be_status')) u.status = parseInt(v('be_status'));
-  if(chk('be_os')) u.os = parseInt(v('be_os'));
+  if(chk('be_os')) u.os = v('be_os');
   if(chk('be_condition')) u.condition = v('be_condition');
   if(chk('be_app_channel_name')) u.app_channel_name = v('be_app_channel_name');
   if(!Object.keys(u).length){ showToast('请勾选要修改的字段', 'error'); return; }
@@ -2594,6 +3061,11 @@ document.addEventListener('click', function(e){
   const btn = document.getElementById('colConfigBtn');
   if(popover && popover.classList.contains('show') && !popover.contains(e.target) && (!btn || !btn.contains(e.target))){
     popover.classList.remove('show');
+  }
+  // Close field info popover
+  const fiPopover = document.getElementById('fieldInfoPopover');
+  if(fiPopover && fiPopover.classList.contains('show') && !fiPopover.contains(e.target) && !e.target.closest('.field-info-btn')){
+    fiPopover.classList.remove('show');
   }
 });
 function renderColumnConfig(){
@@ -2773,12 +3245,12 @@ function switchPage(page){
   if(page === 'referral-config'){
     document.getElementById('page-referral-config').classList.add('active');
     document.querySelector('.sidebar-item[onclick*="referral-config"]').classList.add('active');
-    document.getElementById('breadcrumbCurrent').textContent = '联运应用配置';
+    document.getElementById('breadcrumbCurrent').textContent = '应用引流配置';
     renderTable();
   } else if(page === 'user-data'){
     document.getElementById('page-user-data').classList.add('active');
     document.querySelector('.sidebar-item[onclick*="user-data"]').classList.add('active');
-    document.getElementById('breadcrumbCurrent').textContent = '联运用户数据';
+    document.getElementById('breadcrumbCurrent').textContent = '应用引流用户数据';
     switchUserTab(1);
     renderUserTable();
   }
@@ -2995,6 +3467,14 @@ function clearFilter(id){
 }
 
 // ========== DATE RANGE PICKER ==========
+function fmtDateTime(d){
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  const h = String(d.getHours()).padStart(2,'0');
+  const min = String(d.getMinutes()).padStart(2,'0');
+  return `${y}-${m}-${day}T${h}:${min}`;
+}
 function fmtDate(d){
   const y = d.getFullYear();
   const m = String(d.getMonth()+1).padStart(2,'0');
@@ -3055,11 +3535,76 @@ function setDateRangePreset(preset){
   document.getElementById('drpStart').value = fmtDate(s);
   document.getElementById('drpEnd').value = fmtDate(e);
 }
+
+// ========== FILTER DATE RANGE (Referral config) ==========
+function openFilterDateRangePopup(){
+  const pop = document.getElementById('filterDateRangePopup');
+  pop.classList.toggle('show');
+  if(pop.classList.contains('show')){
+    const inp = document.getElementById('filterDateRange');
+    const rect = inp.getBoundingClientRect();
+    pop.style.left = '0';
+    pop.style.top = (rect.bottom + 4) + 'px';
+  }
+}
+function closeFilterDateRangePopup(){
+  document.getElementById('filterDateRangePopup').classList.remove('show');
+}
+function confirmFilterDateRange(){
+  const s = document.getElementById('filterDrpStart').value;
+  const e = document.getElementById('filterDrpEnd').value;
+  document.getElementById('filterTimeStart').value = s;
+  document.getElementById('filterTimeEnd').value = e;
+  document.getElementById('filterDateRange').value = s && e ? `${s.replace('T',' ')} ~ ${e.replace('T',' ')}` : '';
+  closeFilterDateRangePopup();
+  filterTable();
+}
+function clearFilterDateRange(){
+  document.getElementById('filterDrpStart').value = '';
+  document.getElementById('filterDrpEnd').value = '';
+  document.getElementById('filterTimeStart').value = '';
+  document.getElementById('filterTimeEnd').value = '';
+  document.getElementById('filterDateRange').value = '';
+  closeFilterDateRangePopup();
+  filterTable();
+}
+function setFilterDateRangePreset(preset){
+  const now = new Date();
+  let s, e;
+  if(preset === 'today'){ s = e = now; }
+  else if(preset === 'thisWeek'){
+    const day = now.getDay();
+    const diff = day === 0 ? 6 : day - 1;
+    s = new Date(now); s.setDate(now.getDate() - diff);
+    e = new Date(now);
+  } else if(preset === 'thisMonth'){
+    s = new Date(now.getFullYear(), now.getMonth(), 1);
+    e = new Date(now);
+  } else if(preset === 'last7'){
+    s = new Date(now); s.setDate(now.getDate() - 6);
+    e = new Date(now);
+  } else if(preset === 'last30'){
+    s = new Date(now); s.setDate(now.getDate() - 29);
+    e = new Date(now);
+  }
+  document.getElementById('filterDrpStart').value = fmtDateTime(s);
+  document.getElementById('filterDrpEnd').value = fmtDateTime(e);
+}
 // Close popup on outside click
 document.addEventListener('click', function(e){
+  // Close user-data daterange popup
   const wrap = document.querySelector('.daterange-wrap');
   if(wrap && !wrap.contains(e.target)){
     closeDateRangePopup();
+  }
+  // Close filter daterange popup
+  const fwrap = document.querySelector('#filterDateRange');
+  const fpopup = document.getElementById('filterDateRangePopup');
+  if(fwrap && fpopup && fpopup.classList.contains('show')){
+    const fparent = fwrap.closest('.daterange-wrap');
+    if(fparent && !fparent.contains(e.target)){
+      closeFilterDateRangePopup();
+    }
   }
 });
 
