@@ -638,6 +638,58 @@ th.sortable .sort-arrow.active{opacity:1;color:var(--accent-light)}
   padding:20px;
 }
 .modal-overlay.active{display:flex}
+.modal-overlay.show-schema{justify-content:flex-start;padding:20px 20px 20px 60px}
+
+/* Schema side panel */
+.schema-panel{
+  display:none;position:fixed;right:0;top:0;bottom:0;width:420px;
+  background:var(--bg-card);border-left:2px solid var(--border-color);
+  z-index:1001;flex-direction:column;overflow:hidden;
+  box-shadow:-4px 0 20px rgba(0,0,0,0.3);
+}
+.schema-panel.show{display:flex}
+.schema-panel-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px;border-bottom:1px solid var(--border-color);
+  font-size:0.88rem;font-weight:600;color:var(--text-primary);
+  background:var(--bg-secondary);
+}
+.schema-panel-header .schema-close-btn{
+  background:none;border:none;color:var(--text-tertiary);cursor:pointer;font-size:1rem;
+}
+.schema-panel-header .schema-close-btn:hover{color:var(--text-primary)}
+.schema-panel-body{flex:1;overflow:auto;padding:0}
+.schema-table{width:100%;border-collapse:collapse;font-size:0.73rem}
+.schema-table th{
+  position:sticky;top:0;z-index:1;
+  background:var(--bg-tertiary,#1a1a2e);color:var(--text-secondary);
+  font-weight:600;padding:7px 8px;border-bottom:2px solid var(--border-color);
+  text-align:left;white-space:nowrap;
+}
+.schema-table td{
+  padding:6px 8px;border-bottom:1px solid var(--border-color);
+  color:var(--text-primary);
+}
+.schema-table tbody tr:hover{background:var(--bg-hover)}
+.schema-table .col-pk{color:#27ae60;font-weight:600}
+.schema-table .col-fk{color:#e67e22}
+.schema-table .col-mandatory{color:#e74c3c;font-weight:600}
+.schema-table .col-type{color:var(--accent-light);font-family:var(--font-mono);font-size:0.7rem}
+.schema-table .col-num{text-align:center}
+
+/* Toggle button on modal edge */
+.schema-toggle{
+  position:fixed;right:0;top:50%;transform:translateY(-50%);
+  z-index:1002;display:none;
+  writing-mode:vertical-rl;text-orientation:mixed;
+  padding:10px 6px;border-radius:6px 0 0 6px;
+  background:var(--accent);color:#fff;border:none;cursor:pointer;
+  font-size:0.75rem;font-weight:600;letter-spacing:2px;
+  box-shadow:-2px 0 8px rgba(0,0,0,0.2);
+  transition:opacity 0.2s;
+}
+.schema-toggle:hover{filter:brightness(1.15)}
+.schema-toggle.show{display:block}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @keyframes slideUp{from{opacity:0;transform:translateY(15px) scale(0.97)}to{opacity:1;transform:translateY(0) scale(1)}}
 
@@ -1733,6 +1785,47 @@ body.theme-light .filter-combo input{
   </div>
 </div>
 
+<!-- ===== Schema Toggle Button ===== -->
+<button class="schema-toggle" id="schemaToggleBtn" onclick="toggleSchema()">字段表</button>
+
+<!-- ===== Schema Side Panel ===== -->
+<div class="schema-panel" id="schemaPanel">
+  <div class="schema-panel-header">
+    <span>📋 字段定义表 — application_referral</span>
+    <button class="schema-close-btn" onclick="toggleSchema()">✕</button>
+  </div>
+  <div class="schema-panel-body">
+    <table class="schema-table">
+      <thead><tr>
+        <th>Name</th><th>Code</th><th>Data Type</th><th>Length</th><th>PK</th><th>FK</th><th>Mandatory</th>
+      </tr></thead>
+      <tbody>
+        <tr><td>引流编号</td><td class="col-type">ID</td><td class="col-type">bigint</td><td class="col-num">—</td><td class="col-pk">✔</td><td></td><td class="col-mandatory">✔</td></tr>
+        <tr><td>应用编号</td><td class="col-type">APP_ID</td><td class="col-type">int</td><td class="col-num">—</td><td></td><td></td><td class="col-mandatory">✔</td></tr>
+        <tr><td>引流目标ID</td><td class="col-type">TARGET_ID</td><td class="col-type">varchar(64)</td><td class="col-num">64</td><td></td><td></td><td class="col-mandatory">✔</td></tr>
+        <tr><td>引流目标名称</td><td class="col-type">TARGET_NAME</td><td class="col-type">varchar(30)</td><td class="col-num">30</td><td></td><td></td><td class="col-mandatory">✔</td></tr>
+        <tr><td>引流目标描述</td><td class="col-type">TARGET_DESC</td><td class="col-type">varchar(500)</td><td class="col-num">500</td><td></td><td></td><td></td></tr>
+        <tr><td>启动路径</td><td class="col-type">LAUNCH_PATH</td><td class="col-type">varchar(256)</td><td class="col-num">256</td><td></td><td></td><td></td></tr>
+        <tr><td>奖励周期</td><td class="col-type">REWARD_PERIOD</td><td class="col-type">varchar(30)</td><td class="col-num">30</td><td></td><td></td><td></td></tr>
+        <tr><td>奖励条件</td><td class="col-type">REWARD_COND</td><td class="col-type">varchar(200)</td><td class="col-num">200</td><td></td><td></td><td></td></tr>
+        <tr><td>奖励次数限制</td><td class="col-type">REWARD_TIMES_LIMIT</td><td class="col-type">int</td><td class="col-num">—</td><td></td><td></td><td></td></tr>
+        <tr><td>礼包编号</td><td class="col-type">GIVEPKG_ID</td><td class="col-type">bigint</td><td class="col-num">—</td><td></td><td></td><td></td></tr>
+        <tr><td>应用渠道</td><td class="col-type">APP_CHANNEL</td><td class="col-type">varchar(32)</td><td class="col-num">32</td><td></td><td></td><td></td></tr>
+        <tr><td>系统</td><td class="col-type">OS</td><td class="col-type">varchar(32)</td><td class="col-num">32</td><td></td><td></td><td></td></tr>
+        <tr><td>Banner图URL</td><td class="col-type">BANNER_URL</td><td class="col-type">varchar(256)</td><td class="col-num">256</td><td></td><td></td><td></td></tr>
+        <tr><td>弹窗图URL</td><td class="col-type">POPUP_URL</td><td class="col-type">varchar(256)</td><td class="col-num">256</td><td></td><td></td><td></td></tr>
+        <tr><td>Icon图URL</td><td class="col-type">ICON_URL</td><td class="col-type">varchar(256)</td><td class="col-num">256</td><td></td><td></td><td></td></tr>
+        <tr><td>推荐图URL</td><td class="col-type">RECOMMEND_URL</td><td class="col-type">varchar(256)</td><td class="col-num">256</td><td></td><td></td><td></td></tr>
+        <tr><td>排序</td><td class="col-type">SORT</td><td class="col-type">int</td><td class="col-num">—</td><td></td><td></td><td></td></tr>
+        <tr><td>状态</td><td class="col-type">STATUS</td><td class="col-type">int</td><td class="col-num">—</td><td></td><td></td><td class="col-mandatory">✔</td></tr>
+        <tr><td>创建时间</td><td class="col-type">CREATE_TIME</td><td class="col-type">datetime</td><td class="col-num">—</td><td></td><td></td><td class="col-mandatory">✔</td></tr>
+        <tr><td>更新时间</td><td class="col-type">UPDATE_TIME</td><td class="col-type">datetime</td><td class="col-num">—</td><td></td><td></td><td class="col-mandatory">✔</td></tr>
+        <tr><td>Column_21</td><td class="col-type">COLUMN_21</td><td class="col-type">&lt;Undefined&gt;</td><td class="col-num">—</td><td></td><td></td><td></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
 <!-- ===== DELAY POPUP ===== -->
 <div class="delay-popup-overlay" id="delayPopupOverlay" onclick="closeDelayPopup()">
   <div class="delay-popup" onclick="event.stopPropagation()">
@@ -2586,8 +2679,15 @@ function getSelectedIds(){ return Array.from(document.querySelectorAll('.row-che
 function clearSelection(){ document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = false); document.getElementById('selectAll').checked = false; updateBatchBar(); }
 
 // ========== MODAL HELPERS ==========
-function openModal(id){ document.getElementById(id).classList.add('active'); }
-function closeModal(id){ document.getElementById(id).classList.remove('active'); }
+function openModal(id){ document.getElementById(id).classList.add('active'); if(id==='formModal'){ document.getElementById('schemaToggleBtn').classList.add('show'); } }
+function closeModal(id){ document.getElementById(id).classList.remove('active'); if(id==='formModal'){ document.getElementById('schemaToggleBtn').classList.remove('show'); document.getElementById('schemaPanel').classList.remove('show'); document.getElementById('formModal').classList.remove('show-schema'); } }
+
+function toggleSchema(){
+  const panel = document.getElementById('schemaPanel');
+  const overlay = document.getElementById('formModal');
+  panel.classList.toggle('show');
+  overlay.classList.toggle('show-schema', panel.classList.contains('show'));
+}
 
 // ========== DELAY POPUP ==========
 function openDelayPopup(){
@@ -3139,7 +3239,7 @@ function beUpdateRewardSpec(){
 }
 
 function batchEdit(){
-  const ids = getSelectedIds(); if(!ids.length) return;
+  const ids = getSelectedIds(); if(!ids.length){ showToast('请勾选需要批量操作的列表', 'error'); return; }
   document.getElementById('batchEditCount').textContent = ids.length;
   ['be_launch_path','be_reward_times'].forEach(id => document.getElementById(id).value = '');
   ['be_status','be_os'].forEach(id => document.getElementById(id).value = '');
@@ -3191,7 +3291,7 @@ function batchDelete(){
 
 // ========== BATCH COPY ==========
 function batchCopy(){
-  const ids = getSelectedIds(); if(!ids.length) return;
+  const ids = getSelectedIds(); if(!ids.length){ showToast('请勾选需要批量操作的列表', 'error'); return; }
   document.getElementById('batchCopyCount').textContent = ids.length;
   // Populate app dropdown
   const sel = document.getElementById('batchCopyAppId');
