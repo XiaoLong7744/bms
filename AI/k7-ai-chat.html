@@ -1,1 +1,3073 @@
-k7-ai-chat.html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>K7 游戏中心 - AI 智能对话后台</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+<style>
+/* ==================== CSS Variables (Light Theme) ==================== */
+:root {
+  --bg-primary: #f5f6fa;
+  --bg-secondary: #ffffff;
+  --bg-sidebar: #ffffff;
+  --bg-sidebar-hover: #f0f1f5;
+  --bg-sidebar-active: #e8e9f0;
+  --bg-chat: #f5f6fa;
+  --bg-input: #ffffff;
+  --bg-input-border: #e0e2e8;
+  --bg-user-bubble: #3b82f6;
+  --bg-ai-bubble: #ffffff;
+  --bg-card: #ffffff;
+  --bg-modal: #ffffff;
+  --bg-modal-overlay: rgba(0, 0, 0, 0.5);
+  --bg-tooltip: #ffffff;
+
+  --text-primary: #1a1d2e;
+  --text-secondary: #5a5f78;
+  --text-muted: #9499b3;
+  --text-sidebar: #5a5f78;
+  --text-sidebar-active: #1a1d2e;
+  --text-user-bubble: #ffffff;
+  --text-ai-bubble: #2d3142;
+
+  --accent-primary: #2563eb;
+  --accent-primary-hover: #3b82f6;
+  --accent-primary-glow: rgba(37, 99, 235, 0.15);
+  --accent-secondary: #00b894;
+  --accent-gradient: linear-gradient(135deg, #2563eb 0%, #60a5fa 100%);
+  --accent-gradient-warm: linear-gradient(135deg, #2563eb 0%, #f472b6 100%);
+
+  --border-primary: #e8e9f0;
+  --border-input: #e0e2e8;
+  --border-focus: #2563eb;
+
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.1);
+  --shadow-glow: 0 0 20px rgba(37, 99, 235, 0.12);
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-full: 9999px;
+
+  --sidebar-width: 280px;
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.25s ease;
+  --transition-slow: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ==================== Reset & Base ==================== */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ==================== Scrollbar ==================== */
+::-webkit-scrollbar {
+  width: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-primary);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* ==================== App Layout ==================== */
+.app-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+/* ==================== Sidebar ==================== */
+.sidebar {
+  width: var(--sidebar-width);
+  min-width: var(--sidebar-width);
+  height: 100vh;
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border-primary);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 10;
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.04);
+  transition: width var(--transition-slow), min-width var(--transition-slow);
+}
+
+.sidebar.collapsed {
+  width: 56px;
+  min-width: 56px;
+}
+
+.sidebar.collapsed .sidebar-header .logo-text,
+.sidebar.collapsed .new-chat-btn span,
+.sidebar.collapsed .sidebar-section-label,
+.sidebar.collapsed .chat-item-info,
+.sidebar.collapsed .chat-item-actions,
+.sidebar.collapsed .sidebar-header .new-chat-btn {
+  display: none;
+}
+
+.sidebar.collapsed .sidebar-header {
+  padding: 16px 12px 12px;
+}
+
+.sidebar.collapsed .sidebar-header .logo-container {
+  margin-bottom: 12px;
+  justify-content: center;
+}
+
+.sidebar.collapsed .new-chat-btn {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  justify-content: center;
+}
+
+.sidebar.collapsed .sidebar-body {
+  padding: 4px 4px;
+}
+
+.sidebar.collapsed .chat-list-item {
+  justify-content: center;
+  padding: 10px 0;
+}
+
+.sidebar.collapsed .chat-item-icon {
+  margin-right: 0;
+}
+
+/* Sidebar collapse toggle */
+.sidebar-toggle {
+  position: absolute;
+  top: 50%;
+  right: -14px;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  z-index: 11;
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+}
+
+.sidebar-toggle:hover {
+  background: var(--bg-sidebar-hover);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-md);
+}
+
+.sidebar-toggle i {
+  font-size: 11px;
+  transition: transform var(--transition-normal);
+}
+
+.sidebar.collapsed .sidebar-toggle i {
+  transform: rotate(180deg);
+}
+
+/* Sidebar Header */
+.sidebar-header {
+  padding: 20px 16px 12px;
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.logo-icon {
+  width: 36px;
+  height: 36px;
+  background: var(--accent-gradient);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
+  font-size: 16px;
+  color: #fff;
+  letter-spacing: -0.5px;
+  box-shadow: var(--shadow-glow);
+  flex-shrink: 0;
+}
+
+.logo-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.logo-title {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--text-primary);
+  letter-spacing: 0.5px;
+  line-height: 1.2;
+}
+
+.logo-subtitle {
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-top: 1px;
+}
+
+.new-chat-btn {
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--accent-gradient);
+  border: none;
+  border-radius: var(--radius-sm);
+  color: #fff;
+  font-family: 'Noto Sans SC', sans-serif;
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all var(--transition-normal);
+  box-shadow: var(--shadow-glow);
+}
+
+.new-chat-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 30px rgba(37, 99, 235, 0.35);
+}
+
+.new-chat-btn:active {
+  transform: translateY(0);
+}
+
+.new-chat-btn i {
+  font-size: 13px;
+}
+
+/* Sidebar Chat List */
+.sidebar-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 8px;
+}
+
+.sidebar-section-label {
+  padding: 12px 10px 6px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sidebar-footer .clear-all-btn-main {
+  width: 100%;
+  padding: 8px 0;
+  font-size: 12px;
+  font-weight: 500;
+  color: #94a3b8;
+  background: transparent;
+  border: 1px dashed #cbd5e1;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.sidebar-footer .clear-all-btn-main:hover {
+  background: #f8fafc;
+  border-style: solid;
+  color: #64748b;
+}
+
+.chat-list-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  margin-bottom: 2px;
+  position: relative;
+  group: true;
+}
+
+.chat-list-item:hover {
+  background: var(--bg-sidebar-hover);
+}
+
+.chat-list-item.active {
+  background: var(--bg-sidebar-active);
+}
+
+.chat-list-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 20px;
+  background: var(--accent-primary);
+  border-radius: 0 3px 3px 0;
+}
+
+.chat-item-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: var(--bg-input);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-right: 10px;
+}
+
+.chat-item-icon i {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.chat-list-item.active .chat-item-icon {
+  background: var(--accent-primary);
+}
+
+.chat-list-item.active .chat-item-icon i {
+  color: #fff;
+}
+
+.chat-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.chat-item-name {
+  font-size: 13px;
+  color: var(--text-sidebar);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+
+.chat-list-item.active .chat-item-name {
+  color: var(--text-sidebar-active);
+  font-weight: 500;
+}
+
+.chat-item-time {
+  font-size: 10.5px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.chat-item-actions {
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.chat-list-item:hover .chat-item-actions {
+  opacity: 1;
+}
+
+.chat-action-btn {
+  width: 26px;
+  height: 26px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  transition: all var(--transition-fast);
+}
+
+.chat-action-btn:hover {
+  background: var(--bg-input);
+  color: var(--text-primary);
+}
+
+.chat-action-btn.delete-btn:hover {
+  background: rgba(255, 107, 107, 0.1);
+  color: #e74c3c;
+}
+
+.chat-action-btn i {
+  font-size: 11px;
+}
+
+/* Sidebar Footer */
+.sidebar-footer {
+  padding: 8px 12px 12px;
+  border-top: 1px solid var(--border-primary);
+  flex-shrink: 0;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  transition: background var(--transition-fast);
+  cursor: pointer;
+}
+
+.user-info:hover {
+  background: var(--bg-sidebar-hover);
+}
+
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  background: var(--accent-gradient-warm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.user-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.user-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.user-role {
+  font-size: 10.5px;
+  color: var(--text-muted);
+}
+
+/* ==================== Main Chat Area ==================== */
+.main-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--bg-chat);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle background pattern */
+.main-area::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(37, 99, 235, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 100%, rgba(0, 184, 148, 0.04) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Chat Header */
+.chat-header {
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--border-primary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  position: relative;
+  z-index: 2;
+  box-shadow: var(--shadow-sm);
+}
+
+.chat-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.chat-header-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.chat-header-time {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 400;
+  margin-left: 8px;
+}
+
+.chat-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header-user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: var(--bg-sidebar-hover);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.header-user-info:hover {
+  background: var(--bg-sidebar-active);
+}
+
+.header-user-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--accent-gradient-warm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.header-user-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.header-user-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.header-user-role {
+  font-size: 10px;
+  color: var(--text-muted);
+  line-height: 1.2;
+}
+
+.header-action-btn {
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--border-primary);
+  background: var(--bg-sidebar-hover);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  transition: all var(--transition-fast);
+}
+
+.header-action-btn:hover {
+  background: var(--bg-sidebar-active);
+  color: var(--text-primary);
+  border-color: var(--border-input);
+}
+
+.header-action-btn i {
+  font-size: 13px;
+}
+
+/* ==================== Welcome Screen ==================== */
+.welcome-screen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 24px;
+  padding-top: calc(40px - 100px);
+  position: relative;
+  z-index: 1;
+  animation: fadeInUp 0.6s ease;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.welcome-logo {
+  width: 64px;
+  height: 64px;
+  background: var(--accent-gradient);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
+  font-size: 26px;
+  color: #fff;
+  margin-bottom: 20px;
+  box-shadow: 0 0 40px rgba(37, 99, 235, 0.3);
+  animation: logoFloat 3s ease-in-out infinite;
+}
+
+@keyframes logoFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.welcome-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
+}
+
+.welcome-subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 40px;
+  text-align: center;
+  max-width: 400px;
+  line-height: 1.6;
+}
+
+.welcome-features {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  max-width: 900px;
+  width: 100%;
+}
+
+.feature-card {
+  padding: 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+}
+
+.feature-text {
+  min-width: 0;
+  flex: 1;
+}
+
+.feature-card:hover {
+  border-color: var(--accent-primary);
+  background: #eff6ff;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow);
+}
+
+.feature-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 15px;
+}
+
+.feature-icon.purple {
+  background: rgba(37, 99, 235, 0.1);
+  color: #2563eb;
+}
+
+.feature-icon.teal {
+  background: rgba(0, 184, 148, 0.1);
+  color: #00b894;
+}
+
+.feature-icon.orange {
+  background: rgba(244, 114, 182, 0.1);
+  color: #f472b6;
+}
+
+.feature-icon.blue {
+  background: rgba(37, 99, 235, 0.1);
+  color: #2563eb;
+}
+
+.feature-icon.green {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+.feature-icon.red {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.feature-icon.amber {
+  background: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+}
+
+.feature-text h4 {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 3px;
+}
+
+.feature-text p {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ==================== Chat Messages ==================== */
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  position: relative;
+  z-index: 1;
+  display: none;
+}
+
+.chat-messages.active {
+  display: block;
+}
+
+.message-row {
+  display: flex;
+  margin-bottom: 20px;
+  animation: messageIn 0.35s ease;
+}
+
+@keyframes messageIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.message-row.user {
+  justify-content: flex-end;
+}
+
+.message-row.ai {
+  justify-content: flex-start;
+}
+
+.message-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.message-row.user .message-avatar {
+  background: var(--accent-gradient-warm);
+  color: #fff;
+  margin-left: 10px;
+  order: 2;
+}
+
+.message-row.ai .message-avatar {
+  background: var(--accent-gradient);
+  color: #fff;
+  margin-right: 10px;
+}
+
+.message-content {
+  max-width: 65%;
+  min-width: 60px;
+}
+
+.message-row.user .message-content {
+  order: 1;
+}
+
+.message-bubble {
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  font-size: 13.5px;
+  line-height: 1.65;
+  word-break: break-word;
+}
+
+.message-row.user .message-bubble {
+  background: var(--bg-user-bubble);
+  color: var(--text-user-bubble);
+  border-bottom-right-radius: 4px;
+}
+
+.message-row.ai .message-bubble {
+  background: var(--bg-ai-bubble);
+  color: var(--text-ai-bubble);
+  border: 1px solid var(--border-primary);
+  border-bottom-left-radius: 4px;
+}
+
+/* AI Response Action Buttons */
+.ai-action-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.ai-action-btn {
+  padding: 7px 20px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+  font-family: 'Noto Sans SC', sans-serif;
+}
+
+.ai-action-btn.cancel-btn {
+  background: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+}
+
+.ai-action-btn.cancel-btn:hover {
+  background: #e2e8f0;
+  color: #374151;
+}
+
+.ai-action-btn.confirm-btn {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.ai-action-btn.confirm-btn:hover {
+  background: #1d4ed8;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+}
+
+/* AI Result Card */
+.ai-result-card {
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+  border-radius: 8px;
+  padding: 14px;
+  margin-top: 12px;
+  font-size: 13px;
+  color: #166534;
+  line-height: 1.7;
+  max-width: 760px;
+}
+
+.ai-result-card .result-title {
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 8px;
+  color: #15803d;
+}
+
+.ai-result-card .result-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+
+.ai-result-card .result-label {
+  color: #64748b;
+  flex-shrink: 0;
+}
+
+.ai-result-card .result-value {
+  color: #1f2937;
+  font-weight: 500;
+}
+
+.ai-result-card .result-note {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed #86efac;
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.message-time {
+  font-size: 10.5px;
+  color: var(--text-muted);
+  margin-top: 5px;
+  padding: 0 4px;
+}
+
+.message-row.user .message-time {
+  text-align: right;
+}
+
+/* File attachment in message */
+.message-file-attachment {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(37, 99, 235, 0.08);
+  border: 1px solid rgba(37, 99, 235, 0.2);
+  border-radius: var(--radius-sm);
+  margin-bottom: 8px;
+}
+
+.message-file-attachment i {
+  font-size: 20px;
+  color: var(--accent-primary);
+}
+
+.message-file-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.message-file-name {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.message-file-size {
+  font-size: 10.5px;
+  color: var(--text-muted);
+}
+
+/* Image in message */
+.message-image-preview {
+  max-width: 240px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border-primary);
+}
+
+.message-image-preview img {
+  width: 100%;
+  display: block;
+}
+
+/* Typing indicator */
+.typing-indicator {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 0;
+}
+
+.typing-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--text-muted);
+  border-radius: 50%;
+  animation: typingBounce 1.4s infinite;
+}
+
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typingBounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+  30% { transform: translateY(-6px); opacity: 1; }
+}
+
+/* ==================== Input Area ==================== */
+.input-area {
+  padding: 8px 24px 16px;
+  position: relative;
+  z-index: 2;
+  background: linear-gradient(to top, var(--bg-chat) 60%, transparent);
+  display: flex;
+  justify-content: center;
+}
+
+.input-container {
+  background: var(--bg-input);
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius-lg);
+  padding: 10px 12px;
+  transition: border-color var(--transition-normal), box-shadow var(--transition-normal);
+  width: 100%;
+  max-width: 800px;
+}
+
+.input-container:focus-within {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px var(--accent-primary-glow);
+}
+
+.input-top {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.input-textarea {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-primary);
+  font-family: 'Noto Sans SC', sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  resize: none;
+  min-height: 72px;
+  max-height: 160px;
+  padding: 0;
+}
+
+.input-textarea::placeholder {
+  color: var(--text-muted);
+}
+
+.input-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.upload-btn {
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--border-primary);
+  background: var(--bg-sidebar-hover);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  transition: all var(--transition-fast);
+  position: relative;
+}
+
+.upload-btn:hover {
+  background: var(--bg-sidebar-active);
+  color: var(--accent-primary);
+  border-color: var(--accent-primary);
+}
+
+.upload-btn:hover::after {
+  content: '可上传jpg，png，excel';
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-tooltip);
+  border: 1px solid var(--border-primary);
+  color: var(--text-secondary);
+  font-size: 11px;
+  white-space: nowrap;
+  padding: 4px 10px;
+  border-radius: 6px;
+  box-shadow: var(--shadow-md);
+  pointer-events: none;
+  z-index: 10;
+}
+
+.upload-btn:hover::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 1px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--border-primary);
+  pointer-events: none;
+  z-index: 10;
+}
+
+.upload-btn i {
+  font-size: 14px;
+}
+
+.send-btn {
+  width: 34px;
+  height: 34px;
+  background: var(--accent-gradient);
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  transition: all var(--transition-normal);
+  flex-shrink: 0;
+}
+
+.send-btn:hover {
+  transform: scale(1.05);
+  box-shadow: var(--shadow-glow);
+}
+
+.send-btn:active {
+  transform: scale(0.95);
+}
+
+.send-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.send-btn {
+  width: 34px;
+  height: 34px;
+  background: var(--accent-gradient);
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  transition: all var(--transition-normal);
+  flex-shrink: 0;
+}
+
+.send-btn:hover {
+  transform: scale(1.05);
+  box-shadow: var(--shadow-glow);
+}
+
+.send-btn:active {
+  transform: scale(0.95);
+}
+
+.send-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.send-btn i {
+  font-size: 13px;
+}
+
+/* File preview bar */
+.file-preview-bar {
+  display: none;
+  padding: 8px 0 0;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.file-preview-bar.active {
+  display: flex;
+}
+
+.file-preview-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: rgba(37, 99, 235, 0.08);
+  border: 1px solid rgba(37, 99, 235, 0.2);
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.file-preview-item i {
+  color: var(--accent-primary);
+  font-size: 13px;
+}
+
+.file-preview-item .file-remove {
+  width: 16px;
+  height: 16px;
+  border: none;
+  background: rgba(255, 107, 107, 0.1);
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #e74c3c;
+  font-size: 9px;
+  margin-left: 4px;
+  transition: background var(--transition-fast);
+}
+
+.file-preview-item .file-remove:hover {
+  background: rgba(255, 107, 107, 0.2);
+}
+
+/* Image preview thumbnail */
+.file-preview-item.image-preview {
+  padding: 4px;
+}
+
+.file-preview-item.image-preview img {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+/* ==================== Modal ==================== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--bg-modal-overlay);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  animation: modalFadeIn 0.2s ease;
+}
+
+.modal-overlay.active {
+  display: flex;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-box {
+  background: var(--bg-modal);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  width: 400px;
+  max-width: 90vw;
+  box-shadow: var(--shadow-lg);
+  animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.modal-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.modal-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.modal-input {
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: 'Noto Sans SC', sans-serif;
+  font-size: 13.5px;
+  outline: none;
+  transition: border-color var(--transition-normal);
+  margin-bottom: 20px;
+}
+
+.modal-input:focus {
+  border-color: var(--accent-primary);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.modal-btn {
+  padding: 8px 20px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: 'Noto Sans SC', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.modal-btn.cancel {
+  background: var(--bg-input);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-input);
+}
+
+.modal-btn.cancel:hover {
+  background: var(--bg-sidebar-hover);
+  color: var(--text-primary);
+}
+
+.modal-btn.confirm {
+  background: var(--accent-gradient);
+  color: #fff;
+}
+
+.modal-btn.confirm:hover {
+  box-shadow: var(--shadow-glow);
+}
+
+.modal-btn.danger {
+  background: rgba(255, 107, 107, 0.15);
+  color: #ff6b6b;
+  border: 1px solid rgba(255, 107, 107, 0.3);
+}
+
+.modal-btn.danger:hover {
+  background: rgba(255, 107, 107, 0.25);
+}
+
+/* ==================== Toast ==================== */
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.toast {
+  padding: 12px 18px;
+  background: var(--bg-modal);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 13px;
+  box-shadow: var(--shadow-md);
+  animation: toastIn 0.3s ease, toastOut 0.3s ease 2.7s forwards;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toast i {
+  color: var(--accent-secondary);
+}
+
+.toast.error i {
+  color: #e74c3c;
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes toastOut {
+  from { opacity: 1; }
+  to { opacity: 0; transform: translateY(-10px); }
+}
+
+/* ==================== Empty State ==================== */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.empty-state i {
+  font-size: 32px;
+  margin-bottom: 12px;
+  opacity: 0.5;
+}
+
+/* ==================== Hidden file input ==================== */
+.hidden-input {
+  display: none;
+}
+
+/* ==================== Responsive ==================== */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    left: -280px;
+    z-index: 50;
+    transition: left var(--transition-slow);
+  }
+  .sidebar.open {
+    left: 0;
+  }
+  .welcome-features {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="app-container">
+  <!-- ==================== Left Sidebar ==================== -->
+  <aside class="sidebar" id="sidebar">
+    <button class="sidebar-toggle" onclick="toggleSidebarCollapse()" title="收起/展开侧边栏">
+      <i class="fas fa-chevron-left"></i>
+    </button>
+    <div class="sidebar-header">
+      <div class="logo-container">
+        <div class="logo-icon">K7</div>
+        <div class="logo-text">
+          <span class="logo-title">K7 游戏中心</span>
+          <span class="logo-subtitle">AI Assistant</span>
+        </div>
+      </div>
+      <button class="new-chat-btn" onclick="createNewChat()">
+        <i class="fas fa-plus"></i>
+        新建对话
+      </button>
+    </div>
+
+    <div class="sidebar-body" id="chatList">
+      <div class="sidebar-section-label">对话记录</div>
+      <!-- Chat items will be dynamically inserted here -->
+    </div>
+    <div class="sidebar-footer">
+      <button class="clear-all-btn-main" onclick="showClearAllModal()"><i class="fas fa-trash-alt"></i> 全部清空</button>
+    </div>
+  </aside>
+
+  <!-- ==================== Right Main Area ==================== -->
+  <main class="main-area" id="mainArea">
+    <!-- Chat Header -->
+    <div class="chat-header">
+      <div class="chat-header-left">
+        <button class="header-action-btn" id="menuToggle" onclick="toggleSidebar()" style="display: none;">
+          <i class="fas fa-bars"></i>
+        </button>
+        <span class="chat-header-title" id="chatHeaderTitle">K7 AI 助手</span>
+        <span class="chat-header-time" id="chatHeaderTime"></span>
+      </div>
+      <div class="chat-header-right">
+        <div class="header-user-info">
+          <div class="header-user-avatar">李</div>
+          <div class="header-user-details">
+            <span class="header-user-name">李伟超</span>
+            <span class="header-user-role">棋牌运营</span>
+          </div>
+          <i class="fas fa-chevron-down" style="color: var(--text-muted); font-size: 10px; margin-left: 4px;"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Welcome Screen -->
+    <div class="welcome-screen" id="welcomeScreen">
+      <div class="welcome-logo">K7</div>
+      <h1 class="welcome-title">欢迎使用 K7 AI 助手</h1>
+      <p class="welcome-subtitle">面向 K7 游戏中心内部员工的智能AI系统，支持业务数据查询、后台配置等办公场景</p>
+      <div class="welcome-features">
+        <!-- 1 -->
+        <div class="feature-card" onclick="quickStart('给1185550增加10000金蛋')">
+          <div class="feature-icon green"><i class="fas fa-coins"></i></div>
+          <div class="feature-text">
+            <h4>添加货币</h4>
+            <p>给1185550增加10000金蛋</p>
+          </div>
+        </div>
+        <!-- 2 -->
+        <div class="feature-card" onclick="quickStart('给1185550增加50000银蛋')">
+          <div class="feature-icon amber"><i class="fas fa-arrow-up"></i></div>
+          <div class="feature-text">
+            <h4>增加银蛋及补充</h4>
+            <p>给1185550增加50000银蛋</p>
+          </div>
+        </div>
+        <!-- 3 -->
+        <div class="feature-card" onclick="quickStart('给413231进行注销')">
+          <div class="feature-icon red"><i class="fas fa-sign-out-alt"></i></div>
+          <div class="feature-text">
+            <h4>用户注销</h4>
+            <p>给413231进行注销</p>
+          </div>
+        </div>
+        <!-- 4 -->
+        <div class="feature-card" onclick="quickStart('给31324增加登录权限，到2026年6月20日，限制应用为升级，原因为私下交易，备注信息 客服封停')">
+          <div class="feature-icon blue"><i class="fas fa-shield-alt"></i></div>
+          <div class="feature-text">
+            <h4>用户应用权限</h4>
+            <p>给31324增加登录权限，到2026年6月20日，限制应用为升级</p>
+          </div>
+        </div>
+        <!-- 5 -->
+        <div class="feature-card" onclick="quickStart('重置3132313的密码为123456')">
+          <div class="feature-icon orange"><i class="fas fa-key"></i></div>
+          <div class="feature-text">
+            <h4>用户重置密码</h4>
+            <p>重置3132313的密码为123456</p>
+          </div>
+        </div>
+        <!-- 6 -->
+        <div class="feature-card" onclick="quickStart('查询下313233在2026年6月4日是否有充值掉单情况')">
+          <div class="feature-icon purple"><i class="fas fa-undo"></i></div>
+          <div class="feature-text">
+            <h4>用户充值掉单</h4>
+            <p>查询下313233在2026年6月4日是否有充值掉单情况</p>
+          </div>
+        </div>
+        <!-- 7 -->
+        <div class="feature-card" onclick="quickStart('创建商城项，名称端午礼包5元商城项，花费1000K币，获得20000金蛋')">
+          <div class="feature-icon teal"><i class="fas fa-plus-circle"></i></div>
+          <div class="feature-text">
+            <h4>创建商城项</h4>
+            <p>端午礼包5元商城项</p>
+          </div>
+        </div>
+        <!-- 8 -->
+        <div class="feature-card" onclick="quickStart('修改下商城项目 2928623，里面的支付价格改为888，礼包里面的金蛋改为999')">
+          <div class="feature-icon orange"><i class="fas fa-edit"></i></div>
+          <div class="feature-text">
+            <h4>修改商城项</h4>
+            <p>修改ID451231金额为3000</p>
+          </div>
+        </div>
+        <!-- 9 -->
+        <div class="feature-card" onclick="quickStart('查询商城项id341231')">
+          <div class="feature-icon purple"><i class="fas fa-search"></i></div>
+          <div class="feature-text">
+            <h4>查询商城项</h4>
+            <p>查询商城项ID341231</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat Messages -->
+    <div class="chat-messages" id="chatMessages"></div>
+
+    <!-- Input Area -->
+    <div class="input-area">
+      <div class="input-container">
+        <div class="file-preview-bar" id="filePreviewBar"></div>
+        <div class="input-top">
+          <textarea
+            class="input-textarea"
+            id="messageInput"
+            placeholder="输入您想要查询的数据或配置内容，按Enter发送..."
+            rows="1"
+            onkeydown="handleInputKeydown(event)"
+            oninput="autoResizeTextarea(this); toggleSendBtn()"
+          ></textarea>
+          <div class="input-actions">
+            <button class="send-btn" id="sendBtn" disabled onclick="sendMessage()">
+              <i class="fas fa-paper-plane"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ==================== Rename Modal ==================== -->
+<div class="modal-overlay" id="renameModal">
+  <div class="modal-box">
+    <div class="modal-title">重命名对话</div>
+    <div class="modal-desc">为该对话设置一个新名称，方便后续查找和管理。</div>
+    <input class="modal-input" id="renameInput" type="text" placeholder="请输入新的对话名称" maxlength="30">
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeRenameModal()">取消</button>
+      <button class="modal-btn confirm" onclick="confirmRename()">确认</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== Delete Confirm Modal ==================== -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal-box">
+    <div class="modal-title">删除对话</div>
+    <div class="modal-desc">确定要删除该对话吗？删除后所有聊天内容将永久清空，不可恢复。</div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeDeleteModal()">取消</button>
+      <button class="modal-btn danger" onclick="confirmDelete()">确认删除</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== Clear All Confirm Modal ==================== -->
+<div class="modal-overlay" id="clearAllModal">
+  <div class="modal-box">
+    <div class="modal-title">清除全部对话</div>
+    <div class="modal-desc">确定要清除所有对话记录吗？此操作将永久删除全部聊天内容，不可恢复。</div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeClearAllModal()">取消</button>
+      <button class="modal-btn danger" onclick="confirmClearAll()">确认清空</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== Toast Container ==================== -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Hidden file inputs -->
+<input type="file" class="hidden-input" id="imageInput" accept="image/jpeg,image/png,image/gif,image/webp" onchange="handleImageSelect(event)">
+<input type="file" class="hidden-input" id="fileInput" accept=".jpg,.jpeg,.png,.xls,.xlsx,.pdf,.doc,.docx,.txt,.csv" onchange="handleFileSelect(event)">
+
+<script>
+// ==================== State Management ====================
+let conversations = [];
+let activeConversationId = null;
+let pendingFiles = []; // { type: 'image'|'file', name, size, dataUrl?, file }
+let renameTargetId = null;
+let deleteTargetId = null;
+
+// ==================== Initialize ====================
+function init() {
+  loadFromStorage();
+  if (conversations.length === 0) {
+    // Show welcome screen, no active chat
+    activeConversationId = null;
+  } else {
+    activeConversationId = conversations[0].id;
+  }
+  renderSidebar();
+  renderMainArea();
+}
+
+// ==================== Storage ====================
+function saveToStorage() {
+  try {
+    const data = conversations.map(c => ({
+      ...c,
+      messages: c.messages.map(m => ({
+        ...m,
+        dataUrl: m.dataUrl || null
+      }))
+    }));
+    localStorage.setItem('k7_conversations', JSON.stringify(data));
+    localStorage.setItem('k7_active_id', activeConversationId || '');
+  } catch (e) {
+    console.warn('Storage save failed:', e);
+  }
+}
+
+function loadFromStorage() {
+  try {
+    const data = localStorage.getItem('k7_conversations');
+    const activeId = localStorage.getItem('k7_active_id');
+    if (data) {
+      conversations = JSON.parse(data);
+      activeConversationId = activeId || (conversations.length > 0 ? conversations[0].id : null);
+    }
+  } catch (e) {
+    console.warn('Storage load failed:', e);
+    conversations = [];
+  }
+}
+
+// ==================== Conversation CRUD ====================
+function createNewChat() {
+  const id = 'chat_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+  const now = new Date();
+  const chat = {
+    id,
+    name: generateDefaultName(),
+    createdAt: now.toISOString(),
+    updatedAt: now.toISOString(),
+    messages: []
+  };
+  conversations.unshift(chat);
+  activeConversationId = id;
+  saveToStorage();
+  renderSidebar();
+  // Show welcome screen for new chat, not the empty chat view
+  renderWelcomeOnly();
+  document.getElementById('messageInput').focus();
+}
+
+function renderWelcomeOnly() {
+  const welcome = document.getElementById('welcomeScreen');
+  const messages = document.getElementById('chatMessages');
+  const headerTitle = document.getElementById('chatHeaderTitle');
+
+  welcome.style.display = 'flex';
+  messages.classList.remove('active');
+  messages.innerHTML = '';
+  headerTitle.textContent = 'K7 AI 助手';
+  updateHeaderTime();
+}
+
+function generateDefaultName() {
+  const now = new Date();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hour = String(now.getHours()).padStart(2, '0');
+  const min = String(now.getMinutes()).padStart(2, '0');
+  return `新对话 ${month}-${day} ${hour}:${min}`;
+}
+
+function switchChat(id) {
+  if (activeConversationId === id) return;
+  activeConversationId = id;
+  saveToStorage();
+  renderSidebar();
+  renderMainArea();
+}
+
+function getActiveChat() {
+  return conversations.find(c => c.id === activeConversationId) || null;
+}
+
+function openRenameModal(id, e) {
+  e.stopPropagation();
+  renameTargetId = id;
+  const chat = conversations.find(c => c.id === id);
+  if (!chat) return;
+  document.getElementById('renameInput').value = chat.name;
+  document.getElementById('renameModal').classList.add('active');
+  setTimeout(() => document.getElementById('renameInput').focus(), 100);
+}
+
+function closeRenameModal() {
+  document.getElementById('renameModal').classList.remove('active');
+  renameTargetId = null;
+}
+
+function confirmRename() {
+  const newName = document.getElementById('renameInput').value.trim();
+  if (!newName) {
+    showToast('对话名称不能为空', 'error');
+    return;
+  }
+  const chat = conversations.find(c => c.id === renameTargetId);
+  if (chat) {
+    chat.name = newName;
+    chat.updatedAt = new Date().toISOString();
+    saveToStorage();
+    renderSidebar();
+    if (activeConversationId === renameTargetId) {
+      document.getElementById('chatHeaderTitle').textContent = newName;
+    }
+    showToast('对话已重命名');
+  }
+  closeRenameModal();
+}
+
+function openDeleteModal(id, e) {
+  e.stopPropagation();
+  deleteTargetId = id;
+  document.getElementById('deleteModal').classList.add('active');
+}
+
+function closeDeleteModal() {
+  document.getElementById('deleteModal').classList.remove('active');
+  deleteTargetId = null;
+}
+
+function confirmDelete() {
+  conversations = conversations.filter(c => c.id !== deleteTargetId);
+  if (activeConversationId === deleteTargetId) {
+    activeConversationId = conversations.length > 0 ? conversations[0].id : null;
+  }
+  saveToStorage();
+  renderSidebar();
+  renderMainArea();
+  showToast('对话已删除');
+  closeDeleteModal();
+}
+
+function showClearAllModal() {
+  document.getElementById('clearAllModal').classList.add('active');
+}
+
+function closeClearAllModal() {
+  document.getElementById('clearAllModal').classList.remove('active');
+}
+
+function confirmClearAll() {
+  conversations = [];
+  activeConversationId = null;
+  saveToStorage();
+  renderSidebar();
+  renderMainArea();
+  showToast('已清除全部对话记录');
+  closeClearAllModal();
+}
+
+function clearCurrentChat() {
+  const chat = getActiveChat();
+  if (!chat || chat.messages.length === 0) return;
+  chat.messages = [];
+  chat.updatedAt = new Date().toISOString();
+  saveToStorage();
+  renderMainArea();
+  showToast('对话已清空');
+}
+
+function exportChat() {
+  const chat = getActiveChat();
+  if (!chat || chat.messages.length === 0) {
+    showToast('暂无对话内容可导出', 'error');
+    return;
+  }
+  let text = `# ${chat.name}\n\n`;
+  chat.messages.forEach(m => {
+    const role = m.role === 'user' ? '我' : 'AI';
+    const time = formatTime(m.timestamp);
+    text += `[${time}] ${role}:\n${m.content}\n\n`;
+  });
+  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${chat.name}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('对话记录已导出');
+}
+
+// ==================== Rendering ====================
+function renderSidebar() {
+  const list = document.getElementById('chatList');
+  let html = '<div class="sidebar-section-label">对话记录</div>';
+
+  if (conversations.length === 0) {
+    html += `
+      <div class="empty-state" style="height: auto; padding: 40px 0;">
+        <i class="fas fa-comment-dots"></i>
+        <span>暂无对话记录</span>
+      </div>
+    `;
+  } else {
+    conversations.forEach(chat => {
+      const isActive = chat.id === activeConversationId;
+      const timeStr = formatShortTime(chat.updatedAt);
+      html += `
+        <div class="chat-list-item ${isActive ? 'active' : ''}" onclick="switchChat('${chat.id}')">
+          <div class="chat-item-icon">
+            <i class="fas fa-comment"></i>
+          </div>
+          <div class="chat-item-info">
+            <div class="chat-item-name">${escapeHtml(chat.name)}</div>
+            <div class="chat-item-time">${timeStr}</div>
+          </div>
+          <div class="chat-item-actions">
+            <button class="chat-action-btn" title="重命名" onclick="openRenameModal('${chat.id}', event)">
+              <i class="fas fa-pen"></i>
+            </button>
+            <button class="chat-action-btn delete-btn" title="删除" onclick="openDeleteModal('${chat.id}', event)">
+              <i class="fas fa-trash-alt"></i>
+            </button>
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  list.innerHTML = html;
+}
+
+function renderMainArea() {
+  const welcome = document.getElementById('welcomeScreen');
+  const messages = document.getElementById('chatMessages');
+  const headerTitle = document.getElementById('chatHeaderTitle');
+  const chat = getActiveChat();
+
+  if (!chat) {
+    welcome.style.display = 'flex';
+    messages.classList.remove('active');
+    headerTitle.textContent = 'K7 AI 助手';
+    updateHeaderTime();
+    return;
+  }
+
+  welcome.style.display = 'none';
+  messages.classList.add('active');
+  headerTitle.textContent = chat.name;
+
+  let html = '';
+  chat.messages.forEach(msg => {
+    html += renderMessage(msg);
+  });
+  messages.innerHTML = html;
+  updateHeaderTime();
+  scrollToBottom();
+}
+
+function renderMessage(msg) {
+  const timeStr = formatTime(msg.timestamp);
+  const avatarContent = msg.role === 'user' ? '我' : 'K7';
+
+  let contentHtml = '';
+
+  // File attachments
+  if (msg.files && msg.files.length > 0) {
+    msg.files.forEach(f => {
+      if (f.type === 'image' && f.dataUrl) {
+        contentHtml += `
+          <div class="message-image-preview">
+            <img src="${f.dataUrl}" alt="${escapeHtml(f.name)}">
+          </div>
+        `;
+      } else {
+        const icon = getFileIcon(f.name);
+        contentHtml += `
+          <div class="message-file-attachment">
+            <i class="fas ${icon}"></i>
+            <div class="message-file-info">
+              <div class="message-file-name">${escapeHtml(f.name)}</div>
+              <div class="message-file-size">${formatFileSize(f.size)}</div>
+            </div>
+          </div>
+        `;
+      }
+    });
+  }
+
+  // Text content
+  if (msg.content) {
+    // Check if content contains HTML tags
+    const hasHtml = /<[^>]+>/.test(msg.content);
+    if (hasHtml) {
+      // Content has HTML, render as-is
+      contentHtml += msg.content;
+    } else {
+      // Plain text, escape and preserve line breaks
+      contentHtml += `<div>${escapeHtml(msg.content).replace(/\n/g, '<br>')}</div>`;
+    }
+  }
+
+  return `
+    <div class="message-row ${msg.role}">
+      <div class="message-avatar">${avatarContent}</div>
+      <div class="message-content">
+        <div class="message-bubble">${contentHtml}</div>
+        <div class="message-time">${timeStr}</div>
+      </div>
+    </div>
+  `;
+}
+
+// ==================== Message Sending ====================
+function sendMessage() {
+  const input = document.getElementById('messageInput');
+  const text = input.value.trim();
+  const chat = getActiveChat();
+
+  if (!chat) {
+    createNewChat();
+    return;
+  }
+
+  if (!text && pendingFiles.length === 0) return;
+
+  // Hide welcome screen when sending first message
+  document.getElementById('welcomeScreen').style.display = 'none';
+  document.getElementById('chatMessages').classList.add('active');
+
+  const userMsg = {
+    role: 'user',
+    content: text,
+    timestamp: new Date().toISOString(),
+    files: pendingFiles.map(f => ({ type: f.type, name: f.name, size: f.size, dataUrl: f.dataUrl || null }))
+  };
+
+  chat.messages.push(userMsg);
+  chat.updatedAt = new Date().toISOString();
+
+  // Auto-rename on first message
+  if (chat.messages.filter(m => m.role === 'user').length === 1 && chat.name.startsWith('新对话')) {
+    chat.name = text.substring(0, 20) + (text.length > 20 ? '...' : '');
+  }
+
+  // Clear input
+  input.value = '';
+  autoResizeTextarea(input);
+  pendingFiles = [];
+  clearFilePreviewBar();
+  toggleSendBtn();
+
+  saveToStorage();
+  renderSidebar();
+  renderMainArea();
+
+  // Simulate AI response
+  simulateAIResponse(chat, text);
+}
+
+function simulateAIResponse(chat, userText) {
+  const messagesEl = document.getElementById('chatMessages');
+
+  // Show typing indicator
+  const typingHtml = `
+    <div class="message-row ai" id="typingIndicator">
+      <div class="message-avatar">K7</div>
+      <div class="message-content">
+        <div class="message-bubble">
+          <div class="typing-indicator">
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  messagesEl.insertAdjacentHTML('beforeend', typingHtml);
+  scrollToBottom();
+
+  // Generate response after delay
+  const delay = 800 + Math.random() * 1200;
+  setTimeout(() => {
+    const typing = document.getElementById('typingIndicator');
+    if (typing) typing.remove();
+
+    const response = generateAIResponse(userText);
+    const aiMsg = {
+      role: 'ai',
+      content: response,
+      timestamp: new Date().toISOString()
+    };
+    chat.messages.push(aiMsg);
+    chat.updatedAt = new Date().toISOString();
+    saveToStorage();
+    renderMainArea();
+  }, delay);
+}
+
+function generateAIResponse(text) {
+  const lower = text.toLowerCase();
+
+  if (lower.includes('查询商城') || lower.includes('商城项id341231')) {
+    return generateMallItemResponse();
+  }
+
+  if (lower.includes('创建商城')) {
+    return generateCreateMallResponse();
+  }
+
+  if (lower.includes('修改商城') || lower.includes('商城id451231') || (lower.includes('修改') && lower.includes('商城'))) {
+    return generateEditMallResponse();
+  }
+
+  // 财富操作：信息待补充 - 增加银蛋但没有补充原因信息
+  if (lower.includes('增加') && lower.includes('银蛋') && !lower.includes('减少') &&
+      !(lower.includes('补充原因') || lower.includes('补充：') || lower.includes('补充:'))) {
+    return generateWealthSupplementResponse(text);
+  }
+
+  // 财富操作：有补充原因内容 → 正常操作确认
+  if (lower.includes('有补充') || lower.includes('补充原因') || lower.includes('补充：') || lower.includes('补充:')) {
+    return generateWealthOperationResponse(text);
+  }
+
+  // 财富操作：增加金蛋/减少银蛋
+  if ((lower.includes('增加') || lower.includes('减少')) && (lower.includes('金蛋') || lower.includes('银蛋'))) {
+    return generateWealthOperationResponse(text);
+  }
+
+  if (lower.includes('数据') || lower.includes('查询') || lower.includes('运营') || lower.includes('玩家')) {
+    return `已为您检索相关数据，以下是今日运营概览：\n\n📊 日活跃用户(DAU)：128,456（环比 +3.2%）\n💰 今日充值总额：¥2,156,780\n🎮 在线峰值人数：45,230\n📈 新增注册用户：2,847\n⚠️ 异常告警：服务器 S-03 CPU 使用率 87%\n\n如需查看更详细的数据报表，请告诉我具体维度。`;
+  }
+
+  if (lower.includes('配置') || lower.includes('参数') || lower.includes('服务器') || lower.includes('设置')) {
+    return `关于后台配置，为您提供以下操作指引：\n\n1️⃣ 登录管理后台 → 系统设置 → 参数配置\n2️⃣ 选择目标服务器节点（当前可用：S-01 ~ S-06）\n3️⃣ 修改对应参数项，建议先在测试环境验证\n4️⃣ 提交变更后需等待审核通过（预计 5-10 分钟）\n\n⚠️ 注意：生产环境参数变更需二级审批，请确认操作规范后再执行。`;
+  }
+
+  if (lower.includes('流程') || lower.includes('制度') || lower.includes('请假') || lower.includes('审批')) {
+    return `关于内部流程咨询，为您梳理如下：\n\n📋 请假审批流程：\n1. 登录 OA 系统 → 人事管理 → 请假申请\n2. 填写请假类型、起止日期、事由\n3. 提交后自动流转至直属上级审批\n4. 审批通过后系统自动通知\n\n📌 注意事项：\n• 年假需提前 3 个工作日申请\n• 病假需附医院证明\n• 3 天以上需部门总监审批`;
+  }
+
+  if (lower.includes('你好') || lower.includes('hi') || lower.includes('hello') || lower.includes('嗨')) {
+    return `您好！我是 K7 游戏中心 AI 助手，很高兴为您服务。\n\n我可以帮助您：\n• 🔍 查询游戏运营数据\n• ⚙️ 指导后台功能配置\n• 📄 解析上传的文档资料\n• 💡 回答内部办公相关问题\n\n请问有什么可以帮您的？`;
+  }
+
+  return `感谢您的提问。我已记录您的需求，正在为您处理中。\n\n如需进一步帮助，您可以：\n• 提供更详细的需求描述\n• 上传相关文档供我分析\n• 直接询问具体业务问题\n\n我会尽力为您提供准确、高效的回答。`;
+}
+
+function generateMallItemResponse() {
+  const data = {
+    mall_item_id: 2928627,
+    mall_item_name: "688元商城项目（ai胡金龙）",
+    mall_item_type: 2,
+    mall_item_type_name: "礼包",
+    mall_item_param1: 1122664815,
+    price: 1000,
+    on_sale: false,
+    purchase_limit_times: 1,
+    price_type: 1,
+    price_type_name: "K币",
+    activity_discount: 100,
+    sale_target: 0,
+    sale_target_name: "全部用户",
+    allow_present: false,
+    value_point: 101100,
+    status: 0,
+    status_name: "下架",
+    discount_givepkg_id: 1122664816,
+    mall_item_category_id: 2,
+    category_name: "棋牌类",
+    givepkg_name: "主礼包",
+    discount_givepkg_name: "额外礼包",
+    limit_purchase_period_type: 2,
+    period_type_name: "自然日",
+    verify_status: 1,
+    verify_status_name: "审批中",
+    create_time: "2026-05-18 11:04:59",
+    update_time: "2026-05-18 11:06:31"
+  };
+
+  const statusBadge = data.status === 0
+    ? '<span style="display:inline-block;padding:2px 8px;background:#fee2e2;color:#dc2626;border-radius:4px;font-size:12px;font-weight:500;">已下架</span>'
+    : '<span style="display:inline-block;padding:2px 8px;background:#dcfce7;color:#16a34a;border-radius:4px;font-size:12px;font-weight:500;">已上架</span>';
+
+  const verifyBadge = data.verify_status === 1
+    ? '<span style="display:inline-block;padding:2px 8px;background:#fef3c7;color:#d97706;border-radius:4px;font-size:12px;font-weight:500;">审批中</span>'
+    : '<span style="display:inline-block;padding:2px 8px;background:#dbeafe;color:#2563eb;border-radius:4px;font-size:12px;font-weight:500;">已通过</span>';
+
+  return `<div style="font-family:'Noto Sans SC',sans-serif;max-width:580px;">
+<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+<span style="font-size:15px;font-weight:600;color:#1f2937;">📦 商城项目详情</span>
+${statusBadge}
+${verifyBadge}
+</div>
+
+<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:14px;margin-bottom:12px;">
+<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px 14px;">
+<div>
+<div style="font-size:12px;color:#64748b;margin-bottom:2px;">商城项ID</div>
+<div style="font-size:13px;color:#1f2937;">${data.mall_item_id}</div>
+</div>
+<div>
+<div style="font-size:12px;color:#64748b;margin-bottom:2px;">商城项名称</div>
+<div style="font-size:13px;color:#1f2937;">${data.mall_item_name}</div>
+</div>
+<div>
+<div style="font-size:12px;color:#64748b;margin-bottom:2px;">项目类型</div>
+<div style="font-size:13px;color:#1f2937;">${data.mall_item_type_name}</div>
+</div>
+<div>
+<div style="font-size:12px;color:#64748b;margin-bottom:2px;">所属分类</div>
+<div style="font-size:13px;color:#1f2937;">${data.category_name}</div>
+</div>
+<div>
+<div style="font-size:12px;color:#64748b;margin-bottom:2px;">价格</div>
+<div style="font-size:13px;color:#2563eb;">${data.price} ${data.price_type_name}</div>
+</div>
+<div>
+<div style="font-size:12px;color:#64748b;margin-bottom:2px;">限购次数</div>
+<div style="font-size:13px;color:#1f2937;">${data.purchase_limit_times} 次/${data.period_type_name}</div>
+</div>
+<div>
+<div style="font-size:12px;color:#64748b;margin-bottom:2px;">销售对象</div>
+<div style="font-size:13px;color:#1f2937;">${data.sale_target_name}</div>
+</div>
+<div>
+<div style="font-size:12px;color:#64748b;margin-bottom:2px;">允许赠送</div>
+<div style="font-size:13px;color:#1f2937;">${data.allow_present ? '✅ 是' : '❌ 否'}</div>
+</div>
+</div>
+</div>
+
+<div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:12px;margin-bottom:12px;">
+<div style="font-size:12px;font-weight:500;color:#0369a1;margin-bottom:8px;">🎁 礼包配置</div>
+<div style="display:flex;gap:16px;">
+<div>
+<div style="font-size:12px;color:#64748b;">主礼包</div>
+<div style="font-size:13px;color:#1f2937;">${data.givepkg_name}</div>
+<div style="font-size:11px;color:#94a3b8;">ID: ${data.mall_item_param1}</div>
+</div>
+<div>
+<div style="font-size:12px;color:#64748b;">优惠赠送礼包</div>
+<div style="font-size:13px;color:#1f2937;">${data.discount_givepkg_name}</div>
+<div style="font-size:11px;color:#94a3b8;">ID: ${data.discount_givepkg_id}</div>
+</div>
+</div>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;font-size:11px;color:#64748b;">
+<div>📅 创建时间：${data.create_time}</div>
+<div>📝 更新时间：${data.update_time}</div>
+</div>
+
+<div style="margin-top:12px;padding-top:12px;border-top:1px solid #e2e8f0;font-size:12px;color:#64748b;">
+💡 如需编辑此商城项目，直接说明需要修改的内容即可
+</div>
+</div>`;
+}
+
+function generateCreateMallResponse() {
+  const data = {
+    mall_item_name: "288商城项目",
+    mall_item_category_id: 2,
+    category_name: "棋牌类",
+    mall_item_type: 2,
+    type_name: "礼包",
+    sale_target: 0,
+    sale_target_name: "全部用户",
+    status: 0,
+    status_name: "下架",
+    price_type: 1,
+    price_type_name: "K币",
+    price: 1000,
+    is_verify: true,
+    givepkg_list: {
+      givepkg_name: "288商城项目主礼包",
+      items: [
+        { type: 0, type_name: "金蛋", param1: "1000", count: null },
+        { type: 1, type_name: "银蛋", param1: "2000", count: null },
+        { type: 2, type_name: "物品(道具5)", param1: "5", param2: "100", count: "100个" }
+      ]
+    },
+    discount_givepkg_list: {
+      givepkg_name: "288商城项目额外礼包",
+      items: [
+        { type: 0, type_name: "金蛋", param1: "1000", count: null }
+      ]
+    }
+  };
+
+  // Build main gift items HTML
+  const mainItemsHtml = data.givepkg_list.items.map(item => {
+    const value = item.type === 2 ? `${item.param2}个` : item.param1;
+    return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px dashed #e2e8f0;">
+      <span style="width:8px;height:8px;background:#3b82f6;border-radius:50%;"></span>
+      <span style="flex:1;font-size:13px;color:#374151;">${item.type_name}</span>
+      <span style="font-size:13px;font-weight:500;color:#1f2937;">${value}</span>
+    </div>`;
+  }).join('');
+
+  // Build discount gift items HTML
+  const discountItemsHtml = data.discount_givepkg_list.items.map(item => {
+    return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px dashed #e2e8f0;">
+      <span style="width:8px;height:8px;background:#f59e0b;border-radius:50%;"></span>
+      <span style="flex:1;font-size:13px;color:#374151;">${item.type_name}</span>
+      <span style="font-size:13px;font-weight:500;color:#1f2937;">${item.param1}</span>
+    </div>`;
+  }).join('');
+
+  // Calculate ratios
+  const totalGold = 1000 + 1000; // main + discount
+  const totalSilver = 2000;
+  const kToGoldRatio = (data.price / totalGold).toFixed(3);
+  const kToSilverRatio = (data.price / totalSilver).toFixed(3);
+
+  return `<div style="font-family:'Noto Sans SC',sans-serif;max-width:580px;">
+<div style="margin-bottom:16px;">
+<div style="font-size:15px;font-weight:600;color:#1f2937;margin-bottom:4px;">📋 商城项目配置确认</div>
+<div style="font-size:12px;color:#64748b;">根据您的需求，我已解析出以下商城项目配置信息</div>
+</div>
+
+<!-- 基本信息 -->
+<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:14px;margin-bottom:12px;">
+<div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #e2e8f0;">📦 商城项目信息</div>
+<div style="display:grid;grid-template-columns:110px 1fr;gap:8px 12px;font-size:13px;">
+<div style="color:#64748b;">商城项目名称</div>
+<div style="color:#1f2937;">${data.mall_item_name}</div>
+<div style="color:#64748b;">支付类型</div>
+<div style="color:#1f2937;">${data.price_type_name}</div>
+<div style="color:#64748b;">支付价格</div>
+<div style="color:#2563eb;">${data.price}</div>
+<div style="color:#64748b;">销售对象</div>
+<div style="color:#1f2937;">${data.sale_target_name}</div>
+<div style="color:#64748b;">项目分类</div>
+<div style="color:#1f2937;">${data.category_name}</div>
+<div style="color:#64748b;">项目类型</div>
+<div style="color:#1f2937;">${data.type_name}</div>
+<div style="color:#64748b;">初始状态</div>
+<div style="color:#dc2626;">${data.status_name}</div>
+</div>
+</div>
+
+<!-- 主礼包 -->
+<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:14px;margin-bottom:10px;">
+<div style="font-size:12px;font-weight:600;color:#1e40af;margin-bottom:10px;">🎁 主礼包：${data.givepkg_list.givepkg_name}</div>
+${mainItemsHtml}
+</div>
+
+<!-- 额外礼包 -->
+<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:14px;margin-bottom:12px;">
+<div style="font-size:12px;font-weight:600;color:#92400e;margin-bottom:10px;">🎁 额外礼包：${data.discount_givepkg_list.givepkg_name}</div>
+${discountItemsHtml}
+</div>
+
+<!-- 比例验证 -->
+<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px;margin-bottom:12px;">
+<div style="font-size:12px;font-weight:600;color:#166534;margin-bottom:8px;">✅ 比例验证</div>
+<div style="font-size:12px;color:#374151;line-height:1.6;">
+<div>• K币:金蛋 = ${data.price}:${totalGold} = 1:${(totalGold/data.price).toFixed(0)} <span style="color:#16a34a;">(≤ 1:2000 ✓)</span></div>
+<div>• K币:银蛋 = ${data.price}:${totalSilver} = 1:${(totalSilver/data.price).toFixed(0)} <span style="color:#16a34a;">(≤ 1:40000 ✓)</span></div>
+</div>
+</div>
+
+<!-- 操作提示 -->
+<div style="background:#fefce8;border:1px solid #fde047;border-radius:8px;padding:12px;">
+<div style="font-size:12px;color:#854d0e;line-height:1.6;">
+💡 <strong>请确认信息</strong><br>
+正确请说"<strong>正确/确定/ok</strong>"后即可创建商城项并发起审批<br>
+错误请说明需要修改的内容
+</div>
+</div>
+
+<div class="ai-action-buttons" id="createActionBtns">
+<button class="ai-action-btn cancel-btn" onclick="handleCreateCancel()">取消</button>
+<button class="ai-action-btn confirm-btn" onclick="handleCreateConfirm()">确认</button>
+</div>
+<div id="createActionResult"></div>
+</div>`;
+}
+
+function generateEditMallResponse() {
+  const tag = (text, color) => `<span style="display:inline-block;padding:1px 6px;background:${color};color:#fff;border-radius:3px;font-size:11px;font-weight:500;margin-left:4px;">${text}</span>`;
+  const changed = (before, after) => `${before} → ${tag(after, '#dc2626')}`;
+  const unchanged = (val) => `${val} <span style="color:#94a3b8;font-size:11px;">(不变)</span>`;
+
+  const mainItemsHtml = [
+    { name: '金蛋', before: '1000', after: '999', modified: true },
+    { name: '银蛋', before: '2000', after: '2000', modified: false },
+    { name: '物品(ID:5)', before: '100个', after: '100个', modified: false }
+  ].map(item => {
+    const dotColor = item.modified ? '#ef4444' : '#94a3b8';
+    const valueHtml = item.modified ? changed(item.before, item.after) : unchanged(item.before);
+    return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px dashed #e2e8f0;">
+      <span style="width:8px;height:8px;background:${dotColor};border-radius:50%;flex-shrink:0;"></span>
+      <span style="flex:1;font-size:13px;color:#374151;">${item.name}</span>
+      <span style="font-size:13px;color:#1f2937;">${valueHtml}</span>
+    </div>`;
+  }).join('');
+
+  return `<div style="font-family:'Noto Sans SC',sans-serif;max-width:580px;">
+<div style="margin-bottom:16px;">
+<div style="font-size:15px;font-weight:600;color:#1f2937;margin-bottom:4px;">✏️ 商城项目修改确认</div>
+<div style="font-size:12px;color:#64748b;">修改商城项目 2928623 的支付价格为 888，主礼包金蛋数量修改为 999</div>
+</div>
+
+<!-- 商城项目信息变更 -->
+<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:14px;margin-bottom:12px;">
+<div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #e2e8f0;">📦 商城项目信息变更</div>
+<div style="display:grid;grid-template-columns:100px 1fr 1fr;gap:6px 12px;font-size:13px;">
+<div style="color:#64748b;font-weight:500;">字段</div>
+<div style="color:#64748b;font-weight:500;">当前值</div>
+<div style="color:#64748b;font-weight:500;">修改后</div>
+
+<div style="color:#64748b;">商城项编号</div>
+<div style="color:#374151;">2928623</div>
+<div style="color:#94a3b8;">不可修改</div>
+
+<div style="color:#64748b;">项目名称</div>
+<div style="color:#374151;">388元商城项目（ai胡金龙）</div>
+<div style="color:#374151;">388元商城项目（ai胡金龙）</div>
+
+<div style="color:#64748b;">支付类型</div>
+<div style="color:#374151;">K币</div>
+<div style="color:#374151;">K币</div>
+
+<div style="color:#64748b;">支付价格</div>
+<div style="color:#374151;">1000</div>
+<div style="color:#dc2626;">888 ${tag('已修改', '#dc2626')}</div>
+
+<div style="color:#64748b;">销售对象</div>
+<div style="color:#374151;">全部用户</div>
+<div style="color:#374151;">全部用户</div>
+
+<div style="color:#64748b;">状态</div>
+<div style="color:#dc2626;">下架</div>
+<div style="color:#dc2626;">下架</div>
+</div>
+</div>
+
+<!-- 主礼包变更 -->
+<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:14px;margin-bottom:10px;">
+<div style="font-size:12px;font-weight:600;color:#1e40af;margin-bottom:10px;">🎁 主礼包变更 (ID: 1122664807)</div>
+${mainItemsHtml}
+</div>
+
+<!-- 额外礼包 -->
+<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:14px;margin-bottom:12px;">
+<div style="font-size:12px;font-weight:600;color:#92400e;margin-bottom:10px;">🎁 额外礼包 (ID: 1122664808)</div>
+<div style="display:flex;align-items:center;gap:8px;padding:6px 0;">
+<span style="width:8px;height:8px;background:#94a3b8;border-radius:50%;flex-shrink:0;"></span>
+<span style="flex:1;font-size:13px;color:#374151;">金蛋</span>
+<span style="font-size:13px;color:#1f2937;">10000 <span style="color:#94a3b8;font-size:11px;">(不变，未提及修改)</span></span>
+</div>
+</div>
+
+<!-- 操作提示 -->
+<div style="background:#fefce8;border:1px solid #fde047;border-radius:8px;padding:12px;">
+<div style="font-size:12px;color:#854d0e;line-height:1.6;">
+💡 <strong>请确认信息</strong><br>
+正确请说"<strong>正确/确认/ok/好的</strong>"后即可编辑商城项并发起审批<br>
+错误请说明需要修改的内容
+</div>
+</div>
+
+<div class="ai-action-buttons" id="editActionBtns">
+<button class="ai-action-btn cancel-btn" onclick="handleEditCancel()">取消</button>
+<button class="ai-action-btn confirm-btn" onclick="handleEditConfirm()">确认</button>
+</div>
+<div id="editActionResult"></div>
+</div>`;
+}
+
+function generateWealthOperationResponse(inputText) {
+  // 从输入文字中提取参数
+  const text = inputText || '';
+  const userId = extractNumber(text, /(\d+)/) || 1185550;
+  // 没有明确"减少"时默认"增加"
+  const isAdd = /减少/.test(text) ? false : true;
+  const typeLabel = isAdd ? '增加' : '减少';
+  const wealthType = /金蛋/.test(text) ? '金蛋' : '银蛋';
+  // 尝试多种位置提取数值
+  const wealth = extractNumber(text, /(增加|减少)\s*(\d+)/, 2) 
+    || extractNumberAfter(text, wealthType, null)
+    || extractNumber(text, /(\d+)/)
+    || (isAdd ? 10000 : 10000);
+  
+  // 提取原因（补充说明）
+  let bz = '运营操作';
+  const bzMatch = text.match(/[,，]?\s*(补充原因|有补充|备注|原因|说明|bz)[：:]*\s*(.*)/);
+  if (bzMatch) {
+    bz = bzMatch[2].trim() || '运营操作补充';
+  }
+
+  const wealthUnits = { '金蛋': '个', '银蛋': '个' };
+  const unit = wealthUnits[wealthType] || '';
+  const sign = isAdd ? '+' : '-';
+
+  return `<div style="font-family:'Noto Sans SC',sans-serif;max-width:580px;">
+<div style="margin-bottom:16px;">
+<div style="font-size:15px;font-weight:600;color:#1f2937;margin-bottom:4px;">⚙️ 操作确认</div>
+<div style="font-size:12px;color:#64748b;">请确认以下 ${typeLabel}${wealthType} 操作信息</div>
+</div>
+
+<!-- 操作详情卡片 -->
+<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:14px;margin-bottom:12px;">
+
+<!-- 表头 -->
+<div style="display:grid;grid-template-columns:100px 1fr 70px;gap:8px 14px;font-size:12px;padding-bottom:8px;border-bottom:2px solid #e2e8f0;margin-bottom:8px;">
+<div style="color:#475569;font-weight:600;">字段类型</div>
+<div style="color:#475569;font-weight:600;">值</div>
+<div style="color:#475569;font-weight:600;text-align:center;">信息</div>
+</div>
+
+<!-- 数据行 -->
+<div style="display:grid;grid-template-columns:100px 1fr 70px;gap:8px 14px;font-size:13px;">
+
+<div style="color:#64748b;display:flex;align-items:center;">用户ID</div>
+<div style="display:flex;align-items:center;color:#1f2937;font-family:monospace;">${userId}</div>
+<div style="display:flex;align-items:center;justify-content:center;"><span style="display:inline-block;padding:1px 8px;background:#dcfce7;color:#16a34a;border-radius:4px;font-size:11px;font-weight:500;">已填</span></div>
+
+<div style="color:#64748b;display:flex;align-items:center;">货币类型</div>
+<div style="display:flex;align-items:center;color:${wealthType === '金蛋' ? '#f59e0b' : '#6366f1'};font-weight:500;">${wealthType}</div>
+<div style="display:flex;align-items:center;justify-content:center;"><span style="display:inline-block;padding:1px 8px;background:#dcfce7;color:#16a34a;border-radius:4px;font-size:11px;font-weight:500;">已填</span></div>
+
+<div style="color:#64748b;display:flex;align-items:center;">操作类型</div>
+<div style="display:flex;align-items:center;color:${isAdd ? '#16a34a' : '#dc2626'};font-weight:500;">${sign}${wealth} ${unit}</div>
+<div style="display:flex;align-items:center;justify-content:center;"><span style="display:inline-block;padding:1px 8px;background:#dcfce7;color:#16a34a;border-radius:4px;font-size:11px;font-weight:500;">已填</span></div>
+
+<div style="color:#64748b;display:flex;align-items:center;">位置</div>
+<div style="display:flex;align-items:center;color:#1f2937;">身上</div>
+<div style="display:flex;align-items:center;justify-content:center;"><span style="display:inline-block;padding:1px 8px;background:#dcfce7;color:#16a34a;border-radius:4px;font-size:11px;font-weight:500;">已填</span></div>
+
+<div style="color:#64748b;display:flex;align-items:center;">原因</div>
+<div style="display:flex;align-items:center;color:#1f2937;">${bz}</div>
+<div style="display:flex;align-items:center;justify-content:center;"><span style="display:inline-block;padding:1px 8px;background:#dcfce7;color:#16a34a;border-radius:4px;font-size:11px;font-weight:500;">已填</span></div>
+
+</div>
+</div>
+
+<!-- 参数预览 -->
+<div style="background:#1e293b;border-radius:8px;padding:12px 14px;margin-bottom:12px;">
+<div style="font-size:11px;color:#94a3b8;margin-bottom:6px;">📋 传参预览</div>
+<pre style="font-family:'Consolas','Monaco',monospace;font-size:12px;color:#e2e8f0;line-height:1.5;margin:0;">{
+  "user_id": ${userId},
+  "wealth_type": ${wealthType === '金蛋' ? 0 : 1},
+  "type": ${isAdd ? 1 : 2},
+  "wealth": ${wealth},
+  "position": 0,
+  "bz": "${bz}"
+}</pre>
+</div>
+
+<!-- 操作提示 -->
+<div style="background:#fefce8;border:1px solid #fde047;border-radius:8px;padding:12px;">
+<div style="font-size:12px;color:#854d0e;line-height:1.6;">
+💡 回复<strong>"确认"</strong>或点击按钮执行，回复<strong>"取消"</strong>或点击按钮取消
+</div>
+</div>
+
+<div class="ai-action-buttons" id="wealthActionBtns">
+<button class="ai-action-btn cancel-btn" onclick="handleWealthCancel()">取消</button>
+<button class="ai-action-btn confirm-btn" onclick="handleWealthConfirm()">确认</button>
+</div>
+<div id="wealthActionResult"></div>
+</div>`;
+}
+
+function extractNumber(text, regex, group) {
+  const match = text.match(regex);
+  if (match) {
+    return parseInt(match[group || 1]);
+  }
+  return null;
+}
+
+function generateWealthSupplementResponse(inputText) {
+  const text = inputText || '';
+  const userId = extractNumber(text, /(\d+)/) || '—';
+  const wealthType = /金蛋/.test(text) ? '金蛋' : '银蛋';
+  const wealth = extractNumber(text, /(增加|减少)\s*(\d+)/, 2) || extractNumberAfter(text, wealthType, null) || '—';
+  const hasBz = /有补充|补充原因|补充：|补充:/.test(text);
+
+  const badge = (status, text) =>
+    status === 'filled'
+      ? `<span style="display:inline-block;padding:1px 8px;background:#dcfce7;color:#16a34a;border-radius:4px;font-size:11px;font-weight:500;">${text}</span>`
+      : `<span style="display:inline-block;padding:1px 8px;background:#fee2e2;color:#dc2626;border-radius:4px;font-size:11px;font-weight:500;">${text}</span>`;
+
+  return `<div style="font-family:'Noto Sans SC',sans-serif;max-width:580px;">
+<div style="margin-bottom:16px;">
+<div style="font-size:15px;font-weight:600;color:#1f2937;margin-bottom:4px;">ℹ️ 信息待补充</div>
+<div style="font-size:12px;color:#64748b;">以下字段存在缺失，请补充完整后重新发送</div>
+</div>
+
+<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:14px;margin-bottom:12px;">
+
+<!-- 表头 -->
+<div style="display:grid;grid-template-columns:100px 1fr 70px;gap:8px 14px;font-size:12px;padding-bottom:8px;border-bottom:2px solid #e2e8f0;margin-bottom:8px;">
+<div style="color:#475569;font-weight:600;">字段类型</div>
+<div style="color:#475569;font-weight:600;">值</div>
+<div style="color:#475569;font-weight:600;text-align:center;">信息</div>
+</div>
+
+<!-- 数据行 -->
+<div style="display:grid;grid-template-columns:100px 1fr 70px;gap:8px 14px;font-size:13px;">
+
+<div style="color:#64748b;display:flex;align-items:center;">用户ID</div>
+<div style="display:flex;align-items:center;color:#1f2937;font-family:monospace;">${userId}</div>
+<div style="display:flex;align-items:center;justify-content:center;">${userId !== '—' ? badge('filled', '已填') : badge('missing', '缺失')}</div>
+
+<div style="color:#64748b;display:flex;align-items:center;">货币类型</div>
+<div style="display:flex;align-items:center;color:${wealthType === '金蛋' ? '#f59e0b' : '#6366f1'};font-weight:500;">${wealthType}</div>
+<div style="display:flex;align-items:center;justify-content:center;">${badge('filled', '已填')}</div>
+
+<div style="color:#64748b;display:flex;align-items:center;">操作数值</div>
+<div style="display:flex;align-items:center;color:#1f2937;">${wealth}</div>
+<div style="display:flex;align-items:center;justify-content:center;">${wealth !== '—' ? badge('filled', '已填') : badge('missing', '缺失')}</div>
+
+<div style="color:#64748b;display:flex;align-items:center;">位置</div>
+<div style="display:flex;align-items:center;color:#1f2937;">身上</div>
+<div style="display:flex;align-items:center;justify-content:center;">${badge('filled', '已填')}</div>
+
+<div style="color:#64748b;display:flex;align-items:center;">原因</div>
+<div style="display:flex;align-items:center;color:${!hasBz ? '#94a3b8' : '#1f2937'};">${hasBz ? '运营操作补充' : '—'}</div>
+<div style="display:flex;align-items:center;justify-content:center;">${hasBz ? badge('filled', '已填') : badge('missing', '缺失')}</div>
+
+</div>
+</div>
+
+<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:12px;">
+<div style="font-size:12px;color:#dc2626;line-height:1.6;">
+💡 <strong>请补充缺失的字段信息！</strong>
+</div>
+</div>
+</div>`;
+}
+
+function extractNumberAfter(text, keyword, defaultVal) {
+  const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  // 先尝试数字在关键词前面: "10000金蛋"
+  let match = text.match(new RegExp('(\\d+)\\s*' + escaped));
+  if (match) return parseInt(match[1]);
+  // 再尝试数字在关键词后面: "金蛋10000"
+  match = text.match(new RegExp(escaped + '\\s*(\\d+)'));
+  if (match) return parseInt(match[1]);
+  return defaultVal;
+}
+
+// ==================== File Handling ====================
+function triggerImageUpload() {
+  document.getElementById('imageInput').click();
+}
+
+function triggerFileUpload() {
+  document.getElementById('fileInput').click();
+}
+
+function triggerCombinedUpload() {
+  document.getElementById('fileInput').click();
+}
+
+// ==================== AI Action Button Handlers ====================
+function handleCreateCancel() {
+  removeActionButtonsFromLastAI('createActionBtns', 'createActionResult');
+  sendUserMessageThenAIReply('取消', '💡 请继续提交您的需求！');
+}
+
+function handleCreateConfirm() {
+  removeActionButtonsFromLastAI('createActionBtns', 'createActionResult');
+  sendUserMessageThenAIReply('确认', `<div class="ai-result-card">
+  <div class="result-title">✅ 创建成功</div>
+  <div class="result-row"><span class="result-label">商城项目ID：</span><span class="result-value">2928623</span></div>
+  <div class="result-row"><span class="result-label">商城项目名称：</span><span class="result-value">388元商城项目（ai胡金龙）</span></div>
+  <div class="result-row"><span class="result-label">支付价格：</span><span class="result-value" style="color:#dc2626;">已从1000修改为3001</span></div>
+  <div class="result-row"><span class="result-label">审批流程：</span><span class="result-value" style="color:#2563eb;">已成功创建</span></div>
+  <div class="result-note">项目已提交审批，请登录后台查看审批状态和最终的生效结果。</div>
+</div>`);
+}
+
+function handleEditCancel() {
+  removeActionButtonsFromLastAI('editActionBtns', 'editActionResult');
+  sendUserMessageThenAIReply('取消', '💡 请继续提交您的需求！');
+}
+
+function handleEditConfirm() {
+  removeActionButtonsFromLastAI('editActionBtns', 'editActionResult');
+  sendUserMessageThenAIReply('确认', `<div class="ai-result-card">
+  <div class="result-title">✅ 商城项目修改成功</div>
+  <div style="margin-bottom:8px;font-size:13px;font-weight:500;color:#15803d;">修改详情：</div>
+  <div class="result-row"><span class="result-label">商城项目编号：</span><span class="result-value">2928623</span></div>
+  <div class="result-row"><span class="result-label">修改内容：</span><span class="result-value">支付价格已从1000元修改为888元，主礼包金蛋已从1000改为999</span></div>
+  <div class="result-row"><span class="result-label">修改时间：</span><span class="result-value">2026-05-13 14:54:13</span></div>
+  <div style="margin:8px 0;padding:8px 0;border-top:1px dashed #86efac;border-bottom:1px dashed #86efac;">
+    <div style="font-size:13px;font-weight:500;color:#15803d;margin-bottom:4px;">审批状态：</div>
+    <div style="font-size:12px;color:#166534;">审批流程已成功创建，请等待相关审核人员审批</div>
+  </div>
+  <div class="result-note">
+    ⚠️ 注意：<br>
+    • 商城项目仍为下架状态，如需上架可后续操作<br>
+    • 价格修改后，请确保与对应的礼包内容相匹配<br>
+    • 如有其他需要修改的内容，请随时告诉我
+  </div>
+</div>`);
+}
+
+function handleWealthCancel() {
+  removeActionButtonsFromLastAI('wealthActionBtns', 'wealthActionResult');
+  sendUserMessageThenAIReply('取消', '💡 操作已取消，如需继续请重新提交需求。');
+}
+
+function handleWealthConfirm() {
+  removeActionButtonsFromLastAI('wealthActionBtns', 'wealthActionResult');
+  sendUserMessageThenAIReply('确认', `<div class="ai-result-card">
+  <div class="result-title">✅ 操作执行成功</div>
+  <div class="result-row"><span class="result-label">操作结果：</span><span class="result-value" style="color:#16a34a;">财富操作已提交</span></div>
+  <div class="result-note">
+    ⚠️ 注意：<br>
+    • 操作已进入处理队列，预计1-3分钟内生效<br>
+    • 如需查看处理进度或撤销操作，请联系管理员<br>
+    • 操作记录已保存至后台日志
+  </div>
+</div>`);
+}
+
+// 从最后一条 AI 消息中移除按钮和结果占位 div
+function removeActionButtonsFromLastAI(btnsId, resultId) {
+  const chat = getActiveChat();
+  if (!chat || chat.messages.length === 0) return;
+  const lastAi = [...chat.messages].reverse().find(m => m.role === 'ai');
+  if (!lastAi) return;
+  // 用正则移除按钮 div 和空的 result div
+  lastAi.content = lastAi.content
+    .replace(new RegExp(`<div[^>]*id="${btnsId}"[^>]*>[\\s\\S]*?</div>\\s*<div[^>]*id="${resultId}"[^>]*>\\s*</div>`, ''), '')
+    .replace(new RegExp(`<div[^>]*id="${resultId}"[^>]*>\\s*</div>\\s*<div[^>]*id="${btnsId}"[^>]*>[\\s\\S]*?</div>`, ''), '');
+  saveToStorage();
+}
+
+// 通用：发送用户消息 → 延迟后显示 AI 回复
+function sendUserMessageThenAIReply(userText, aiReplyHtml) {
+  const chat = getActiveChat();
+  if (!chat) return;
+
+  // 1. 添加用户消息
+  const userMsg = {
+    role: 'user',
+    content: userText,
+    timestamp: new Date().toISOString(),
+    files: []
+  };
+  chat.messages.push(userMsg);
+  chat.updatedAt = new Date().toISOString();
+  saveToStorage();
+  renderMainArea();
+
+  // 2. 显示打字动画
+  const messagesEl = document.getElementById('chatMessages');
+  const typingHtml = `
+    <div class="message-row ai" id="typingIndicator">
+      <div class="message-avatar">K7</div>
+      <div class="message-content">
+        <div class="message-bubble">
+          <div class="typing-indicator">
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  messagesEl.insertAdjacentHTML('beforeend', typingHtml);
+  scrollToBottom();
+
+  // 3. 延迟后显示 AI 回复
+  const delay = 1500 + Math.random() * 1500;
+  setTimeout(() => {
+    const typing = document.getElementById('typingIndicator');
+    if (typing) typing.remove();
+
+    const aiMsg = {
+      role: 'ai',
+      content: aiReplyHtml,
+      timestamp: new Date().toISOString()
+    };
+    chat.messages.push(aiMsg);
+    chat.updatedAt = new Date().toISOString();
+    saveToStorage();
+    renderMainArea();
+  }, delay);
+}
+
+function handleImageSelect(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  if (file.size > 10 * 1024 * 1024) {
+    showToast('图片大小不能超过 10MB', 'error');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    pendingFiles.push({
+      type: 'image',
+      name: file.name,
+      size: file.size,
+      dataUrl: e.target.result
+    });
+    renderFilePreviewBar();
+    toggleSendBtn();
+  };
+  reader.readAsDataURL(file);
+  event.target.value = '';
+}
+
+function handleFileSelect(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  if (file.size > 20 * 1024 * 1024) {
+    showToast('文件大小不能超过 20MB', 'error');
+    return;
+  }
+
+  pendingFiles.push({
+    type: 'file',
+    name: file.name,
+    size: file.size,
+    dataUrl: null
+  });
+  renderFilePreviewBar();
+  toggleSendBtn();
+  event.target.value = '';
+}
+
+function renderFilePreviewBar() {
+  const bar = document.getElementById('filePreviewBar');
+  if (pendingFiles.length === 0) {
+    bar.classList.remove('active');
+    bar.innerHTML = '';
+    return;
+  }
+
+  bar.classList.add('active');
+  let html = '';
+  pendingFiles.forEach((f, i) => {
+    if (f.type === 'image' && f.dataUrl) {
+      html += `
+        <div class="file-preview-item image-preview">
+          <img src="${f.dataUrl}" alt="${escapeHtml(f.name)}">
+          <span style="font-size: 11px; max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(f.name)}</span>
+          <button class="file-remove" onclick="removePendingFile(${i})"><i class="fas fa-times"></i></button>
+        </div>
+      `;
+    } else {
+      const icon = getFileIcon(f.name);
+      html += `
+        <div class="file-preview-item">
+          <i class="fas ${icon}"></i>
+          <span style="max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(f.name)}</span>
+          <button class="file-remove" onclick="removePendingFile(${i})"><i class="fas fa-times"></i></button>
+        </div>
+      `;
+    }
+  });
+  bar.innerHTML = html;
+}
+
+function removePendingFile(index) {
+  pendingFiles.splice(index, 1);
+  renderFilePreviewBar();
+  toggleSendBtn();
+}
+
+function clearFilePreviewBar() {
+  pendingFiles = [];
+  renderFilePreviewBar();
+}
+
+// ==================== Quick Start ====================
+function quickStart(text) {
+  if (!getActiveChat()) {
+    createNewChat();
+  }
+  const input = document.getElementById('messageInput');
+  input.value = text;
+  autoResizeTextarea(input);
+  toggleSendBtn();
+  input.focus();
+}
+
+// ==================== Input Helpers ====================
+function handleInputKeydown(event) {
+  if (event.key === 'Enter' && !event.shiftKey) {
+    event.preventDefault();
+    sendMessage();
+  }
+}
+
+function autoResizeTextarea(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+function toggleSendBtn() {
+  const btn = document.getElementById('sendBtn');
+  const input = document.getElementById('messageInput');
+  btn.disabled = !input.value.trim() && pendingFiles.length === 0;
+}
+
+function scrollToBottom() {
+  const el = document.getElementById('chatMessages');
+  setTimeout(() => {
+    el.scrollTop = el.scrollHeight;
+  }, 50);
+}
+
+// ==================== Utilities ====================
+function formatTime(isoStr) {
+  const d = new Date(isoStr);
+  const h = String(d.getHours()).padStart(2, '0');
+  const m = String(d.getMinutes()).padStart(2, '0');
+  return `${h}:${m}`;
+}
+
+function formatShortTime(isoStr) {
+  const d = new Date(isoStr);
+  const now = new Date();
+  const diffMs = now - d;
+  const diffMin = Math.floor(diffMs / 60000);
+
+  if (diffMin < 1) return '刚刚';
+  if (diffMin < 60) return `${diffMin} 分钟前`;
+
+  const diffHr = Math.floor(diffMin / 60);
+  if (diffHr < 24) return `${diffHr} 小时前`;
+
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${month}-${day}`;
+}
+
+function formatFileSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+function getFileIcon(filename) {
+  const ext = filename.split('.').pop().toLowerCase();
+  const map = {
+    pdf: 'fa-file-pdf',
+    doc: 'fa-file-word', docx: 'fa-file-word',
+    xls: 'fa-file-excel', xlsx: 'fa-file-excel', csv: 'fa-file-excel',
+    ppt: 'fa-file-powerpoint', pptx: 'fa-file-powerpoint',
+    txt: 'fa-file-alt', md: 'fa-file-alt'
+  };
+  return map[ext] || 'fa-file';
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function showToast(message, type = 'success') {
+  const container = document.getElementById('toastContainer');
+  const icon = type === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle';
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `<i class="fas ${icon}"></i> ${escapeHtml(message)}`;
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+
+function toggleSidebarCollapse() {
+  document.getElementById('sidebar').classList.toggle('collapsed');
+}
+
+// ==================== Keyboard shortcut ====================
+document.addEventListener('keydown', function(e) {
+  // Ctrl/Cmd + Enter to rename
+  if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+    e.preventDefault();
+    createNewChat();
+  }
+});
+
+// Close modals on overlay click
+document.getElementById('renameModal').addEventListener('click', function(e) {
+  if (e.target === this) closeRenameModal();
+});
+document.getElementById('deleteModal').addEventListener('click', function(e) {
+  if (e.target === this) closeDeleteModal();
+});
+document.getElementById('clearAllModal').addEventListener('click', function(e) {
+  if (e.target === this) closeClearAllModal();
+});
+
+// Enter to confirm rename
+document.getElementById('renameInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') confirmRename();
+  if (e.key === 'Escape') { closeRenameModal(); closeClearAllModal(); }
+});
+
+// ==================== Header Time ====================
+function updateHeaderTime() {
+  const el = document.getElementById('chatHeaderTime');
+  if (!el) return;
+  const chat = getActiveChat();
+  if (!chat || chat.messages.length === 0) {
+    el.textContent = '';
+    return;
+  }
+  // 取最后一条消息的时间
+  const lastMsg = chat.messages[chat.messages.length - 1];
+  const ts = new Date(lastMsg.timestamp);
+  const y = ts.getFullYear();
+  const m = String(ts.getMonth() + 1).padStart(2, '0');
+  const d = String(ts.getDate()).padStart(2, '0');
+  const weekDays = ['日', '一', '二', '三', '四', '五', '六'];
+  const w = weekDays[ts.getDay()];
+  const h = String(ts.getHours()).padStart(2, '0');
+  const min = String(ts.getMinutes()).padStart(2, '0');
+  el.textContent = `${y}-${m}-${d} 周${w} ${h}:${min}`;
+}
+
+// ==================== Start ====================
+init();
+</script>
+</body>
+</html>
