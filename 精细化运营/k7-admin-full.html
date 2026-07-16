@@ -8211,52 +8211,6 @@ style: {
 
               ),
 
-
-              cmtWrap('popup_id',
-
-
-                React.createElement('span', {
-
-
-                  style: { display: 'inline-flex', alignItems: 'stretch', border: '1px solid #d9d9d9', borderRadius: 6, background: '#fff', width: 150, overflow: 'hidden', transition: 'border-color 0.3s, box-shadow 0.3s' },
-
-
-                  onMouseEnter: function(e) { e.currentTarget.style.borderColor = '#4096ff'; e.currentTarget.style.boxShadow = '0 0 0 2px rgba(5,145,255,0.1)'; },
-
-
-                  onMouseLeave: function(e) { e.currentTarget.style.borderColor = '#d9d9d9'; e.currentTarget.style.boxShadow = 'none'; },
-
-
-                },
-
-
-                  React.createElement(Input, {
-
-
-                    placeholder: '\u6d3b\u52a8 ID',
-
-
-                    value: filters.popup_id,
-
-
-                    onChange: function(e) { setFilters({app_id: filters.app_id, popup_id: e.target.value, popup_name: filters.popup_name, popup_code: filters.popup_code, dateRange: filters.dateRange}); setPage(1); },
-
-
-                    style: { border: 'none', width: '100%', padding: '4px 10px', outline: 'none' },
-
-
-                    allowClear: true
-
-
-                  })
-
-
-                )
-
-
-              ),
-
-
             cmtWrap('popup_name',
 
 
